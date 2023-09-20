@@ -1,34 +1,4 @@
 {
-  "components": [
-    {
-      "model": "viam-soleng:ros2:base",
-      "attributes": {
-        "ros_topic": "/cmd_vel",
-        "publish_rate": "0.2"
-      },
-      "depends_on": [],
-      "name": "rosbase",
-      "type": "base"
-    },
-    {
-      "depends_on": [],
-      "name": "imu",
-      "type": "movement_sensor",
-      "model": "viam-soleng:ros2:imu",
-      "attributes": {
-        "ros_topic": "/imu"
-      }
-    },
-    {
-      "model": "viam-soleng:ros2:camera",
-      "attributes": {
-        "ros_topic": "/oakd/rgb/preview/image_raw"
-      },
-      "depends_on": [],
-      "name": "ros2_camera",
-      "type": "camera"
-    }
-  ],
   "services": [
     {
       "namespace": "viam-soleng",
@@ -47,11 +17,51 @@
   },
   "modules": [
     {
-      "version": "0.0.2",
       "type": "registry",
-      "name": "viam-soleng_ros2-data-integration",
-      "module_id": "viam-soleng:ros2-data-integration"
+      "name": "viam-soleng_viam-ros2-integration",
+      "module_id": "viam-soleng:viam-ros2-integration",
+      "version": "0.0.6"
     }
   ],
-  "fragments": []
+  "fragments": [],
+  "components": [
+    {
+      "model": "viam-soleng:ros2:base",
+      "attributes": {
+        "ros_topic": "/cmd_vel",
+        "publish_rate": "0.2"
+      },
+      "depends_on": [],
+      "name": "base",
+      "type": "base"
+    },
+    {
+      "depends_on": [],
+      "name": "imu",
+      "type": "movement_sensor",
+      "model": "viam-soleng:ros2:imu",
+      "attributes": {
+        "ros_topic": "/imu"
+      }
+    },
+    {
+      "name": "lidar",
+      "model": "viam-soleng:ros2:lidar",
+      "type": "camera",
+      "namespace": "rdk",
+      "attributes": {
+        "ros_topic": "/scan"
+      },
+      "depends_on": []
+    },
+    {
+      "model": "viam-soleng:ros2:camera",
+      "attributes": {
+        "ros_topic": "/oakd/rgb/preview/image_raw"
+      },
+      "depends_on": [],
+      "name": "camera",
+      "type": "camera"
+    }
+  ]
 }
