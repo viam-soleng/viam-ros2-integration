@@ -1,0 +1,33 @@
+{
+  "module_id": "viam-soleng:viam-ros2-integration",
+  "visibility": "public",
+  "url": "https://github.com/viam-soleng/viam-ros2-integration",
+  "description": "Use Viam features on top of your ROS 2 robot.",
+  "models": [
+    {
+      "api": "rdk:component:base",
+      "model": "viam-soleng:ros2:base"
+    },
+    {
+      "api": "rdk:component:camera",
+      "model": "viam-soleng:ros2:camera"
+    },
+    {
+      "api": "rdk:component:sensor",
+      "model": "viam-soleng:ros2:sensor"
+    },
+    {
+      "api": "rdk:component:movement_sensor",
+      "model": "viam-soleng:ros2:imu"
+    },
+    {
+      "api": "rdk:component:camera",
+      "model": "viam-soleng:ros2:lidar"
+    },
+    {
+      "api": "viam-soleng:service:ros2_logger",
+      "model": "viam-soleng:ros2:logger"
+    }
+  ],
+  "entrypoint": "run.sh"
+}

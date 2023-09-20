@@ -23,7 +23,7 @@ logger = getLogger(__name__)
 
 
 class RosBase(Base, Reconfigurable):
-    MODEL: ClassVar[Model] = Model(ModelFamily('viamlabs', 'ros2'), 'base')
+    MODEL: ClassVar[Model] = Model(ModelFamily('viam-soleng', 'ros2'), 'base')
     is_base_moving: bool
     lock: Lock
     logger: logging.Logger
@@ -56,6 +56,7 @@ class RosBase(Base, Reconfigurable):
 
     def ros_publisher_cb(self):
         self.publisher.publish(self.twist_msg)
+
 
     def reconfigure(self, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]):
         self.ros_topic = config.attributes.fields['ros_topic'].string_value

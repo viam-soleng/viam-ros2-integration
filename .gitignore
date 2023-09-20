@@ -2,6 +2,9 @@
 venv
 .venv
 *.pyc
-
+.vscode
 __pycache__
 .DS_Store
+.python-version
+module.tar.gz
+buf.lock

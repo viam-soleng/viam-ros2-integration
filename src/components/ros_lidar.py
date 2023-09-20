@@ -29,7 +29,7 @@ from viam.media.video import CameraMimeType
 
 
 class RosLidar(Camera, Reconfigurable):
-    MODEL: ClassVar[Model] = Model(ModelFamily('viamlabs', 'ros2'), 'lidar')
+    MODEL: ClassVar[Model] = Model(ModelFamily('viam-soleng', 'ros2'), 'lidar')
     logger: logging.Logger
     ros_topic: str
     ros_node: Node
