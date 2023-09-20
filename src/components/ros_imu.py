@@ -1,3 +1,4 @@
+import sys
 import logging
 import rclpy
 import viam
@@ -38,7 +39,7 @@ class RosImuProperties(MovementSensor.Properties):
 
 
 class RosImu(MovementSensor, Reconfigurable):
-    MODEL: ClassVar[Model] = Model(ModelFamily('viamlabs', 'ros2'), 'imu')
+    MODEL: ClassVar[Model] = Model(ModelFamily('viam-soleng', 'ros2'), 'imu')
     ros_topic: str
     ros_node: Node
     subscription: Subscription

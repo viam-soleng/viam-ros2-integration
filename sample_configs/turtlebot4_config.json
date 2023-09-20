@@ -1,0 +1,57 @@
+{
+  "components": [
+    {
+      "model": "viam-soleng:ros2:base",
+      "attributes": {
+        "ros_topic": "/cmd_vel",
+        "publish_rate": "0.2"
+      },
+      "depends_on": [],
+      "name": "rosbase",
+      "type": "base"
+    },
+    {
+      "depends_on": [],
+      "name": "imu",
+      "type": "movement_sensor",
+      "model": "viam-soleng:ros2:imu",
+      "attributes": {
+        "ros_topic": "/imu"
+      }
+    },
+    {
+      "model": "viam-soleng:ros2:camera",
+      "attributes": {
+        "ros_topic": "/oakd/rgb/preview/image_raw"
+      },
+      "depends_on": [],
+      "name": "ros2_camera",
+      "type": "camera"
+    }
+  ],
+  "services": [
+    {
+      "namespace": "viam-soleng",
+      "model": "viam-soleng:ros2:logger",
+      "attributes": {
+        "ros_topic": "/rosout",
+        "log_level": "debug"
+      },
+      "name": "logger",
+      "type": "ros2_logger"
+    }
+  ],
+  "processes": [],
+  "network": {
+    "bind_address": ":8081"
+  },
+  "modules": [
+    {
+      "version": "0.0.2",
+      "type": "registry",
+      "name": "viam-soleng_ros2-data-integration",
+      "module_id": "viam-soleng:ros2-data-integration"
+    }
+  ],
+  "fragments": []
+}
