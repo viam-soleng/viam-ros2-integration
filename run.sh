@@ -11,13 +11,17 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 # setup of virtual environment
 # TODO: create flag vs. update flag
 #
-if [ ! -d ${SCRIPT_DIR}/venv/bin/python ]; then
-  echo "Setting up virtual environment"
+if [[ ! -d ${SCRIPT_DIR}/venv/bin/python ]]; then
+  echo "Setting up virtual environment & installing requirements"
   python3 -m venv ${SCRIPT_DIR}/venv
   exec ${SCRIPT_DIR}/venv/bin/python -m pip install -r ${SCRIPT_DIR}/requirements.txt
 else
-  echo "virtual environment exists"
+  echo "virtual environment exists, will not run setup"
 fi
+
+#
+#
+#
 export VIAM_ROS_NODE_NAME=
 export ROS_NAMESPACE=
 
