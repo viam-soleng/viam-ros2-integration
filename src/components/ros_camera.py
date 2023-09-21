@@ -18,6 +18,7 @@ from rclpy.node import Node
 from rclpy.subscription import Subscription
 from sensor_msgs.msg import Image as ROSImage
 from .viam_ros_node import ViamRosNode
+from .ros_environment import RosEnvironment
 from cv_bridge import CvBridge
 
 
@@ -53,7 +54,7 @@ class RosCamera(Camera, Reconfigurable):
         topic = config.attributes.fields["ros_topic"].string_value
         if topic == "":
             raise Exception("ros_topic required")
-        return []
+        return [RosEnvironment.COMPONENT_NAME]
 
     def reconfigure(
         self, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]

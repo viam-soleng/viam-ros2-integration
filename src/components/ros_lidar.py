@@ -25,6 +25,7 @@ from viam.resource.base import ResourceBase
 from viam.resource.registry import Registry, ResourceCreatorRegistration
 from viam.resource.types import Model, ModelFamily
 from .viam_ros_node import ViamRosNode
+from .ros_environment import RosEnvironment
 from viam.media.video import CameraMimeType
 
 
@@ -51,7 +52,7 @@ class RosLidar(Camera, Reconfigurable):
         topic = config.attributes.fields['ros_topic'].string_value
         if topic == '':
             raise Exception('ros_topic required')
-        return []
+        return [RosEnvironment.COMPONENT_NAME]
 
     def reconfigure(self, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]):
         self.ros_topic = config.attributes.fields['ros_topic'].string_value

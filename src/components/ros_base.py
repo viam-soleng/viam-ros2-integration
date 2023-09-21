@@ -1,7 +1,6 @@
 import logging
 from threading import Lock
 import viam
-from utils import RclpyNodeManager
 from viam.logging import getLogger
 from typing import Any, ClassVar, Dict, Mapping, Optional, Sequence, Tuple
 from typing_extensions import Self
@@ -13,11 +12,11 @@ from viam.resource.base import ResourceBase
 from viam.resource.registry import Registry, ResourceCreatorRegistration
 from viam.resource.types import Model, ModelFamily
 from viam.utils import ValueTypes
-from rclpy.node import Node
 from rclpy.publisher import Publisher
 from rclpy.timer import Rate
 from geometry_msgs.msg import Twist
 from .viam_ros_node import ViamRosNode
+from .ros_environment import RosEnvironment
 
 logger = getLogger(__name__)
 
@@ -52,7 +51,7 @@ class RosBase(Base, Reconfigurable):
         if publish_rate == 0.0:
             raise Exception('rate required')
 
-        return []
+        return [RosEnvironment.COMPONENT_NAME]
 
     def ros_publisher_cb(self):
         self.publisher.publish(self.twist_msg)

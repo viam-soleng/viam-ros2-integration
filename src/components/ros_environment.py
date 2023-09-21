@@ -1,6 +1,7 @@
 """
-sensor.py
+ros_environment.py
 
+the core of this component will ensure that the
 
 """
 import importlib
@@ -10,7 +11,7 @@ from array import array
 from threading import Lock
 from utils import RclpyNodeManager
 from viam.logging import getLogger
-from typing import Any, ClassVar, Dict, Mapping, Optional, Sequence, Tuple
+from typing import Any, ClassVar, Dict, List, Mapping, Optional, Sequence, Tuple
 from typing_extensions import Self
 from viam.components.sensor import Sensor
 from viam.module.types import Reconfigurable
@@ -21,38 +22,15 @@ from viam.resource.registry import Registry, ResourceCreatorRegistration
 from viam.resource.types import Model, ModelFamily
 from rclpy.node import Node
 from .viam_ros_node import ViamRosNode
-from .ros_environment import RosEnvironment
-
-class RosIrobotHazardNode(Node):
-    def __init__(self, hazard_topic, node_name):
-        super().__init__(node_name, enable_rosout=True)
-        self.lock = Lock()
-        qos_policy = rclpy.qos.QoSProfile(
-            reliability=rclpy.qos.ReliabilityPolicy.BEST_EFFORT,
-            history=rclpy.qos.HistoryPolicy.KEEP_LAST,
-            depth=1
-        )
-        self.subscriber = self.create_subscription(
-            HazardDetectionVector,
-            hazard_topic,
-            self.subscriber_callback,
-            qos_profile=qos_policy
-        )
-        self.msg = None
-
-    def subscriber_callback(self, msg):
-        with self.lock:
-            self.msg = msg
 
 
-class RosSensor(Sensor, Reconfigurable):
+class RosEnvironment(Sensor, Reconfigurable):
     # TODO: Make sensor generic with the ability to customize nodes and return messages
-    MODEL: ClassVar[Model] = Model(ModelFamily('viamlabs', 'ros2'), 'sensor')
-    ros_topic: str
-    ros_node: ViamRosNode
-    ros_msg_type: str
-    ros_sensor_cls: ClassVar
-    ros_msg_package: str
+    MODEL: ClassVar[Model] = Model(ModelFamily('viamlabs', 'ros2'), 'environment')
+    COMPONENT_NAME: str = 'ros_environment'
+    ros_environment_files: List[str]
+    custom_variables: Dict[str, str]
+    appendable_vars: Dict[str, str]
     logger: logging.Logger
 
     @classmethod
@@ -85,7 +63,7 @@ class RosSensor(Sensor, Reconfigurable):
         except ModuleNotFoundError as mnfe:
             raise Exception(f'invalid ros_msg_type: {mnfe}')
 
-        return [RosEnvironment.COMPONENT_NAME]
+        return []
 
     def reconfigure(self, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]):
         self.ros_topic = config.attributes.fields['ros_topic'].string_value
