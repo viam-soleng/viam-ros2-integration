@@ -88,7 +88,7 @@ class RosCamera(Camera, Reconfigurable):
             if self.image is None:
                 img = Image.new(mode="RGB", size=(250, 250))
             else:
-                img = Image.fromarray(bridge.imgmsg_to_cv2(self.image, desired_encoding='passthrough'))
+                img = Image.fromarray(bridge.imgmsg_to_cv2(self.image, "rgb8")) # Image is received as bgr8 and needs to be converted to rgb
             return img
 
     async def get_images(
