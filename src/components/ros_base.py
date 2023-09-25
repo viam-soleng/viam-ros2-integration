@@ -16,7 +16,6 @@ from rclpy.publisher import Publisher
 from rclpy.timer import Rate
 from geometry_msgs.msg import Twist
 from .viam_ros_node import ViamRosNode
-from .ros_environment import RosEnvironment
 
 logger = getLogger(__name__)
 
@@ -51,7 +50,7 @@ class RosBase(Base, Reconfigurable):
         if publish_rate == 0.0:
             raise Exception('rate required')
 
-        return [RosEnvironment.COMPONENT_NAME]
+        return []
 
     def ros_publisher_cb(self):
         self.publisher.publish(self.twist_msg)

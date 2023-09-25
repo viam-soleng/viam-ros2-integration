@@ -20,7 +20,7 @@ else
 fi
 
 #
-#
+# Move this to the /etc/viam setup
 #
 export VIAM_ROS_NODE_NAME=
 export ROS_NAMESPACE=

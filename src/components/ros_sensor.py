@@ -5,12 +5,14 @@ sensor.py
 """
 import importlib
 import logging
+import threading
+
 import rclpy
 from array import array
 from threading import Lock
 from utils import RclpyNodeManager
 from viam.logging import getLogger
-from typing import Any, ClassVar, Dict, Mapping, Optional, Sequence, Tuple
+from typing import Any, ClassVar, Mapping, Optional, Sequence
 from typing_extensions import Self
 from viam.components.sensor import Sensor
 from viam.module.types import Reconfigurable
@@ -19,30 +21,7 @@ from viam.proto.common import ResourceName
 from viam.resource.base import ResourceBase
 from viam.resource.registry import Registry, ResourceCreatorRegistration
 from viam.resource.types import Model, ModelFamily
-from rclpy.node import Node
 from .viam_ros_node import ViamRosNode
-from .ros_environment import RosEnvironment
-
-class RosIrobotHazardNode(Node):
-    def __init__(self, hazard_topic, node_name):
-        super().__init__(node_name, enable_rosout=True)
-        self.lock = Lock()
-        qos_policy = rclpy.qos.QoSProfile(
-            reliability=rclpy.qos.ReliabilityPolicy.BEST_EFFORT,
-            history=rclpy.qos.HistoryPolicy.KEEP_LAST,
-            depth=1
-        )
-        self.subscriber = self.create_subscription(
-            HazardDetectionVector,
-            hazard_topic,
-            self.subscriber_callback,
-            qos_profile=qos_policy
-        )
-        self.msg = None
-
-    def subscriber_callback(self, msg):
-        with self.lock:
-            self.msg = msg
 
 
 class RosSensor(Sensor, Reconfigurable):
@@ -54,6 +33,9 @@ class RosSensor(Sensor, Reconfigurable):
     ros_sensor_cls: ClassVar
     ros_msg_package: str
     logger: logging.Logger
+    lock: threading.Lock
+    msg: Any
+    subscription: rclpy.subscription.Subscription
 
     @classmethod
     def new(cls, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]) -> Self:
@@ -85,7 +67,7 @@ class RosSensor(Sensor, Reconfigurable):
         except ModuleNotFoundError as mnfe:
             raise Exception(f'invalid ros_msg_type: {mnfe}')
 
-        return [RosEnvironment.COMPONENT_NAME]
+        return []
 
     def reconfigure(self, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]):
         self.ros_topic = config.attributes.fields['ros_topic'].string_value

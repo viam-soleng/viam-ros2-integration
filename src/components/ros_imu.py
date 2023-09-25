@@ -17,7 +17,6 @@ from viam.utils import ValueTypes
 from rclpy.node import Node
 from rclpy.subscription import Subscription
 from sensor_msgs.msg import Imu
-from .ros_environment import RosEnvironment
 from .viam_ros_node import ViamRosNode
 
 
@@ -62,7 +61,7 @@ class RosImu(MovementSensor, Reconfigurable):
         topic = config.attributes.fields['ros_topic'].string_value
         if topic == '':
             raise Exception('ros_topic required')
-        return [RosEnvironment.COMPONENT_NAME]
+        return []
 
     def reconfigure(self, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]):
         self.ros_topic = config.attributes.fields['ros_topic'].string_value

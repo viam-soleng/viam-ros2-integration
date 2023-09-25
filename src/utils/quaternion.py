@@ -17,6 +17,7 @@ class OrientationVectorS(Structure):
 class QuaternionS(Structure):
     pass
 
+
 quaternion_array = c_double * 4
 orientation_vector_array = c_double * 4
 
