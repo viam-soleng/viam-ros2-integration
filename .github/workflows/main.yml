@@ -1,0 +1,27 @@
+on:
+  push:
+  release:
+    types: [published]
+
+env:
+  VERSION: ${{ github.event_name == 'release' && github.ref_name || format('0.0.0-{0}.{1}', github.ref_name, github.run_number) }}
+
+jobs:
+  publish:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        platform: [arm64, amd64]
+    steps:
+    - uses: actions/checkout@v3
+    - name: build
+      run: make module.tar.gz
+    - name: upload
+      if: ${{ github.event_name == 'release' }}
+      uses: viamrobotics/upload-module@main
+      with:
+        module-path: module.tar.gz
+        platform: linux/${{ matrix.platform }}
+        version: ${{ env.VERSION }}
+        key-id: ${{ secrets.viam_key_id }}
+        key-value: ${{ secrets.viam_key_value }}
