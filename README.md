@@ -20,14 +20,21 @@ for building maps
 4. Any other type can currently be converted to a sensor message to display the ROS message, this allows all data (including
 above conversions [1-3]) to be collected and sent to the viam cloud to allow users to manage data in near-real time.
 
-### Installation
+### ROS Configuration
 
-#### Install Viam
+#### Viam running as root and rmw_fastrtps_cpp
+If you are using fast DDS you need to first enable fast DDS to use UDP only, the [fastdd_rpi.xml](./sample_configs/fastdds_rpi.xml) 
+is an example of what the configuration should look like. This applies to the Turtlebot 4 as an example.
+By default, rmw_fastrtps_cpp uses [eProsima](https://www.eprosima.com/index.php) DDS implementation, 
+which makes use of [shared memory transports](https://fast-dds.docs.eprosima.com/en/latest/fastdds/transport/shared_memory/shared_memory.html)
+when communication is between entities running on the same processing unit (or host).
+
+Since viam by default starts as root, there are some shared memory issues. The current fix is to update
+the DDS implementation to use `UDPv4` as the only transport, see [fastdds_rpi.xml](./sample_configs/fastdds_rpi.xml) for 
+the example config used in turtlebot4.
+
+### Viam Installation & Configuration
 To install viam follow the instructions on our [docs](https://docs.viam.com/installation/)
-
-#### Prepare DDS
-If we are using fast DDS we need to first enable fast DDS to use UDP only, the [fastdd_rpi.xml](./sample_configs/fastdds_rpi.xml) 
-is an example of what the configuration should look like.
 
 #### Prepare ROS2 Environment
 Every ROS2 environment potentially has a custom configuration, this includes namespaces, environment variables etc.
@@ -36,18 +43,6 @@ Before installing the module we need to create a file `/etc/viam/setup.bash` whi
 #### Deploy modular resource
 To install, we can choose this module from our module registry and install it, use the [sample_config.json](./sample_configs/sample_config.json) 
 to configure your robot.
-
-### Configuration
-
-
-### Viam running as root and rmw_fastrtps_cpp
-By default, rmw_fastrtps_cpp uses [eProsima](https://www.eprosima.com/index.php) DDS implementation, 
-which makes use of [shared memory transports](https://fast-dds.docs.eprosima.com/en/latest/fastdds/transport/shared_memory/shared_memory.html)
-when communication is between entities running on the same processing unit (or host).
-
-Since viam by default starts as root, there are some shared memory issues. The current fix is to update
-the DDS implementation to use `UDPv4` as the only transport, see [fastdds_rpi.xml](./sample_configs/fastdds_rpi.xml) for 
-the example config used in turtlebot4.
 
 ## Contact & Contributions
 We welcome pull requests and issues, if there are any issues you can email us at:
