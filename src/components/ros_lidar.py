@@ -1,9 +1,11 @@
 """
 ros_lidar.py
 
-ROS produces LaserScan messages for lidar data
+ROS produces LaserScan messages for lidar data, this data must be
+transformed to point cloud data to be consumed by the RDK
+
+Currently, we support 2D scans without intensity
 """
-import logging
 import math
 import numpy as np
 import rclpy
@@ -16,8 +18,7 @@ from threading import Lock
 from typing import ClassVar, List, Mapping, Optional, Sequence, Tuple, Union
 from typing_extensions import Self
 from viam.components.camera import Camera, DistortionParameters, IntrinsicParameters, RawImage
-from viam.logging import getLogger
-from viam.media.video import NamedImage 
+from viam.media.video import NamedImage
 from viam.module.types import Reconfigurable
 from viam.proto.app.robot import ComponentConfig
 from viam.proto.common import ResourceName, ResponseMetadata
@@ -27,10 +28,25 @@ from viam.resource.types import Model, ModelFamily
 from .viam_ros_node import ViamRosNode
 from viam.media.video import CameraMimeType
 
+# PCD required header information
+VERSION = 'VERSION .7\n'
+FIELDS = 'FIELDS x y z\n'
+SIZE = 'SIZE 4 4 4\n'
+TYPE_OF = 'TYPE F F F\n'
+COUNT = 'COUNT 1 1 1\n'
+HEIGHT = 'HEIGHT 1\n'
+VIEWPOINT = 'VIEWPOINT 0 0 0 1 0 0 0\n'
+DATA = 'DATA binary\n'
+
 
 class RosLidar(Camera, Reconfigurable):
+    """
+    RosLidar supports consuming laserscan messages and converting to the
+    RDK Pointcloud type.
+
+    For this integration we require the ros topic to consume
+    """
     MODEL: ClassVar[Model] = Model(ModelFamily('viamlabs', 'ros2'), 'lidar')
-    logger: logging.Logger
     ros_topic: str
     ros_node: Node
     subscription: Subscription
@@ -40,20 +56,31 @@ class RosLidar(Camera, Reconfigurable):
 
     @classmethod
     def new(cls, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]) -> Self:
+        """
+        new creates a new lidar object which will subscribe to the configured lidar scan topic
+        """
         lidar = cls(config.name)
         lidar.ros_node = None
-        lidar.logger = getLogger(f'{__name__}.{lidar.__class__.__name__}')
         lidar.reconfigure(config, dependencies)
         return lidar
 
     @classmethod
-    def  validate_config(cls, config: ComponentConfig) -> Sequence[str]:
+    def validate_config(cls, config: ComponentConfig) -> Sequence[str]:
+        """
+        validate_config requires one component attribute which is the ros_topic to
+        subscribe to
+        """
         topic = config.attributes.fields['ros_topic'].string_value
         if topic == '':
             raise Exception('ros_topic required')
         return []
 
-    def reconfigure(self, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]):
+    def reconfigure(self, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]) -> None:
+        """
+        reconfigure is called when the RDK configuration is changed, during this process
+        we will update the ros node to ensure this component is properly configured base
+        on any system configuration changes
+        """
         self.ros_topic = config.attributes.fields['ros_topic'].string_value
         self.ros_lidar_properties = Camera.Properties(
             supports_pcd=True,
@@ -83,28 +110,43 @@ class RosLidar(Camera, Reconfigurable):
         self.lock = Lock()
         self.msg = None
 
-    def subscriber_callback(self, msg):
+    def subscriber_callback(self, msg: LaserScan) -> None:
+        """
+        subscriber_callback to listen for laser scan messages
+        """
         with self.lock:
             self.msg = msg
 
     async def get_image(self, mime_type: str='', *, timeout: Optional[float]=None, **kwargs) -> Union[Image, RawImage]:
+        """
+        get_image
+        in Viam a lidar is considered a type of camera meaning it must implement all the
+        camera interfaces, since a generic lidar does not have the concept of images we
+        will raise the unimplemented error
+        """
         raise NotImplementedError()
 
-    async def get_images(self, *, timeout: Optional[float]=None, **kwargs) -> Tuple[List[NamedImage], ResponseMetadata]:
+    async def get_images(
+            self,
+            *,
+            timeout: Optional[float]=None,
+            **kwargs
+    ) -> Tuple[List[NamedImage], ResponseMetadata]:
+        """
+        get_images
+        another camera interface which is needed for cameras, in this case we raise the
+        unimplemented error
+        """
         raise NotImplementedError()
 
     async def get_point_cloud(self, *, timeout: Optional[float]=None, **kwargs) -> Tuple[bytes, str]:
+        """
+        get_point_cloud
+        In viam lidar points are represented by point cloud elements,
+        """
         if self.msg is None:
             raise Exception('laserscan msg not ready')
 
-        version = 'VERSION .7\n'
-        fields = 'FIELDS x y z\n'
-        size = 'SIZE 4 4 4\n'
-        type_of = 'TYPE F F F\n'
-        count = 'COUNT 1 1 1\n'
-        height = 'HEIGHT 1\n'
-        viewpoint = 'VIEWPOINT 0 0 0 1 0 0 0\n'
-        data = 'DATA binary\n'
         pdata = []
         for i, r in enumerate(self.msg.ranges):
             if r < self.msg.range_min or r > self.msg.range_max:
@@ -119,16 +161,23 @@ class RosLidar(Camera, Reconfigurable):
 
         width = f'WIDTH {len(pdata)}\n'
         points = f'POINTS {len(pdata)}\n'
-        header = f'{version}{fields}{size}{type_of}{count}{width}{height}{viewpoint}{points}{data}'
+        header = f'{VERSION}{FIELDS}{SIZE}{TYPE_OF}{COUNT}{width}{HEIGHT}{VIEWPOINT}{points}{DATA}'
         a = np.array(pdata, dtype='f')
         h = bytes(header, 'UTF-8')
 
         return h + a.tobytes(), CameraMimeType.PCD
 
     async def get_properties(self, *, timeout: Optional[float] = None, **kwargs) -> Camera.Properties:
+        """
+        Return the base lidar properties
+        """
         return self.ros_lidar_properties
 
 
+"""
+Register the new MODEL as well as define how the object is validated 
+and created
+"""
 Registry.register_resource_creator(
     Camera.SUBTYPE,
     RosLidar.MODEL,

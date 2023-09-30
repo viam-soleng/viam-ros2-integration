@@ -1,17 +1,15 @@
 """
 sensor.py
 
-
+We treat all non-specific topics as sensors right now
 """
 import importlib
-import logging
 import threading
 
 import rclpy
 from array import array
 from threading import Lock
 from utils import RclpyNodeManager
-from viam.logging import getLogger
 from typing import Any, ClassVar, Mapping, Optional, Sequence
 from typing_extensions import Self
 from viam.components.sensor import Sensor
@@ -25,33 +23,49 @@ from .viam_ros_node import ViamRosNode
 
 
 class RosSensor(Sensor, Reconfigurable):
-    # TODO: Make sensor generic with the ability to customize nodes and return messages
+    """
+    The ROS sensor can represent any ROS2 message
+
+    The sensor takes the message type as well as the python module the
+    message type is in
+
+    The sensor will then use the standard message functions to dynamically
+    build retrieve the results
+    """
     MODEL: ClassVar[Model] = Model(ModelFamily('viamlabs', 'ros2'), 'sensor')
     ros_topic: str
     ros_node: ViamRosNode
     ros_msg_type: str
-    ros_sensor_cls: ClassVar
+    ros_sensor_cls: Any
     ros_msg_package: str
-    logger: logging.Logger
     lock: threading.Lock
     msg: Any
     subscription: rclpy.subscription.Subscription
 
     @classmethod
     def new(cls, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]) -> Self:
+        """
+        Class method to create a new instance of the sensor
+        """
         sensor = cls(config.name)
         sensor.ros_node = None
-        sensor.logger = getLogger(f'{__name__}.{sensor.__class__.__name__}')
         sensor.reconfigure(config, dependencies)
         return sensor
 
     @classmethod
     def validate_config(cls, config: ComponentConfig) -> Sequence[str]:
+        """
+        class method used to validate the configuration of the sensor
+
+        For a sensor to be setup correctly, we require the following attributes:
+        1. ros_topic: this will be the topic we listen to for messages
+        2. ros_msg_package: this will be where the module is located for the message
+        3. ros_msg_type: this is the class that represents the ROS message
+        """
         topic = config.attributes.fields['ros_topic'].string_value
         msg_package = config.attributes.fields['ros_msg_package'].string_value
         msg_type = config.attributes.fields['ros_msg_type'].string_value
 
-        # TODO: Document this
         if topic == '':
             raise Exception('ros_topic required')
 
@@ -63,13 +77,18 @@ class RosSensor(Sensor, Reconfigurable):
         try:
             tmp = importlib.import_module(msg_package)
             if not hasattr(tmp, msg_type):
-                raise Exception(f'invalid ros_msg_type, {msg_package} does not have {ros_msg_type}')
+                raise Exception(f'invalid ros_msg_type, {msg_package} does not have {msg_type}')
         except ModuleNotFoundError as mnfe:
             raise Exception(f'invalid ros_msg_type: {mnfe}')
 
         return []
 
-    def reconfigure(self, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]):
+    def reconfigure(self, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]) -> None:
+        """
+        This method is called with the robot configuration is changed, for this process
+        to work we will destroy the subscription as well as reset the node then setup
+        the subscription with the topic
+        """
         self.ros_topic = config.attributes.fields['ros_topic'].string_value
         self.ros_msg_package = config.attributes.fields['ros_msg_package'].string_value
         self.ros_msg_type = config.attributes.fields['ros_msg_type'].string_value
@@ -105,6 +124,9 @@ class RosSensor(Sensor, Reconfigurable):
         rcl_mgr.spin_and_add_node(self.ros_node)
 
     def subscriber_callback(self, msg):
+        """
+        callback for the subscriber
+        """
         with self.lock:
             self.msg = msg
 
@@ -116,7 +138,11 @@ class RosSensor(Sensor, Reconfigurable):
         **kwargs
     ) -> Mapping[str, Any]:
         """
-        recursive here
+        get_readings is the core sensor interface which is called by
+        the data capture service as well as other components
+
+        When working in the ROS pub/sub model, if the publisher is not
+        ready we will return a default 'NOT_READY' message.
 
         :param extra:
         :param timeout:
@@ -131,6 +157,15 @@ class RosSensor(Sensor, Reconfigurable):
 
 def build_msg(msg):
     """
+    build_msg() will recursively grab all values from a ROS message
+
+    Every ROS message custom or standard has the "get_fields_and_field_types"
+    method which we can use to recursively build a python dictionary representing
+    the ROS message.
+
+    The base case for this algorithm is when we get to the simple python types:
+    numbers, strings, etc.
+
 
     :param msg:
     :return:
@@ -143,11 +178,15 @@ def build_msg(msg):
     else:
         # builtin type
         msg_type = type(msg)
+        # for list types we must analyze each element as it could be a ROS type
+        # which needs further decomposition
         if msg_type is list or msg_type is tuple or msg_type is set or msg_type is array:
             l_data = []
             for value in msg:
                 l_data.append(build_msg(value))
             return l_data
+        # for dictionary types we must analyze each value found in the key as it can
+        # be a ROS type or list type which will need further decomposition
         elif msg_type is dict:
                 d_data = {}
                 for key in msg.keys():
@@ -158,6 +197,10 @@ def build_msg(msg):
     return r_data
 
 
+"""
+Register the new MODEL as well as define how the object is validated 
+and created
+"""
 Registry.register_resource_creator(
     Sensor.SUBTYPE,
     RosSensor.MODEL,
