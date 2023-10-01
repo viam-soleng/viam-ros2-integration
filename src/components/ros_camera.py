@@ -100,8 +100,7 @@ class RosCamera(Camera, Reconfigurable):
         """
         subscriber_callback called when we get an image off the ROS topic
         """
-        with self.lock:
-            self.image = image
+        self.image = image
 
     async def get_image(
         self,
@@ -113,7 +112,9 @@ class RosCamera(Camera, Reconfigurable):
         get_image will either return an empty image if the topic is not ready
         or a new PIL.Image from the ROS Image message
         """
-        img = self.image
+        with self.lock:
+            img = self.image
+
         if img is None:
             return Image.new(mode='RGB', size=(250, 250))
         else:

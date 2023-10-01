@@ -6,6 +6,7 @@ Ideally we will have a single ROS node but this will change based on the need
 of the architectures we come across
 """
 from rclpy.node import Node
+import os
 from typing_extensions import Self
 from utils import RclpyNodeManager
 
@@ -23,7 +24,7 @@ class ViamRosNode(Node):
     def get_viam_ros_node(
         cls,
         namespace: str = '',
-        node_name: str = 'viam_ros_node',
+        node_name: str = '',
         enable_rosout: bool = True
     ) -> Self:
         """
@@ -31,13 +32,21 @@ class ViamRosNode(Node):
         does not exist it will create it
         """
         if cls.node is None:
+            if node_name is None or node_name == '':
+                if 'VIAM_NODE_NAME' in os.environ and os.environ['VIAM_NODE_NAME'] != '':
+                    nodename = os.environ['VIAM_NODE_NAME']
+                else:
+                    raise Exception(
+                        'cannot find valid viam node name in environment,'
+                        ' please set VIAM_NODE_NAME\nsee install instructions'
+                    )
             cls.node = ViamRosNode(namespace, node_name, enable_rosout)
         return cls.node
 
     def __init__(
         self,
         namespace: str = '',
-        node_name: str = 'viam_ros_node',
+        node_name: str = '',
         enable_rosout: bool = True
     ) -> None:
         """

@@ -6,8 +6,8 @@
 3. more message conversion
 4. improve ros_base (see note below)
 5. set parameter config
-6. Expose more of the RCLPY node
-7. Code configuration
+6. Expose more of the RCLPY node (services, parameters, etc)
+7. Code deployment configuration
 8. ros2_config.py: installation process
 
 ### ros_base

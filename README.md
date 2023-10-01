@@ -22,6 +22,8 @@ above conversions [1-3]) to be collected and sent to the viam cloud to allow use
 
 ### Installation
 
+For detailed instructions see [INSTALL.md](./INSTALL.md)
+
 #### Install Viam
 To install viam follow the instructions on our [docs](https://docs.viam.com/installation/)
 
