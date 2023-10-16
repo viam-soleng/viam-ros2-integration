@@ -36,7 +36,7 @@
   ],
   "components": [
     {
-      "model": "viamlabs:ros2:base",
+      "model": "viam-soleng:ros2:base",
       "attributes": {
         "ros_topic": "/tb4lite/cmd_vel",
         "publish_rate": "0.2"
@@ -52,19 +52,19 @@
       "depends_on": [],
       "name": "imu",
       "type": "movement_sensor",
-      "model": "viamlabs:ros2:imu"
+      "model": "viam-soleng:ros2:imu"
     },
     {
       "name": "lidar",
       "type": "camera",
-      "model": "viamlabs:ros2:lidar",
+      "model": "viam-soleng:ros2:lidar",
       "attributes": {
         "ros_topic": "/tb4lite/scan"
       },
       "depends_on": []
     },
     {
-      "model": "viamlabs:ros2:sensor",
+      "model": "viam-soleng:ros2:sensor",
       "attributes": {
         "ros_msg_package": "irobot_create_msgs.msg",
         "ros_msg_type": "HazardDetectionVector",
@@ -75,7 +75,7 @@
       "type": "sensor"
     },
     {
-      "model": "viamlabs:ros2:sensor",
+      "model": "viam-soleng:ros2:sensor",
       "attributes": {
         "ros_topic": "/tb4lite/battery_state",
         "ros_msg_package": "sensor_msgs.msg",
@@ -88,7 +88,7 @@
     {
       "name": "dock_status",
       "type": "sensor",
-      "model": "viamlabs:ros2:sensor",
+      "model": "viam-soleng:ros2:sensor",
       "attributes": {
         "ros_msg_package": "irobot_create_msgs.msg",
         "ros_msg_type": "DockStatus",
@@ -97,7 +97,7 @@
       "depends_on": []
     },
     {
-      "model": "viamlabs:ros2:sensor",
+      "model": "viam-soleng:ros2:sensor",
       "attributes": {
         "ros_topic": "/tb4lite/joint_states",
         "ros_msg_package": "sensor_msgs.msg",
@@ -116,12 +116,12 @@
       "depends_on": [],
       "name": "robot_description",
       "type": "sensor",
-      "model": "viamlabs:ros2:sensor"
+      "model": "viam-soleng:ros2:sensor"
     },
     {
       "name": "wheel_status",
       "type": "sensor",
-      "model": "viamlabs:ros2:sensor",
+      "model": "viam-soleng:ros2:sensor",
       "attributes": {
         "ros_msg_type": "WheelStatus",
         "ros_topic": "/tb4lite/wheel_status",
@@ -133,7 +133,7 @@
       "depends_on": [],
       "name": "camera",
       "type": "camera",
-      "model": "viamlabs:ros2:camera",
+      "model": "viam-soleng:ros2:camera",
       "attributes": {
         "ros_topic": "/tb4lite/oakd/rgb/preview/image_raw"
       }
