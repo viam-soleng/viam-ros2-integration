@@ -46,7 +46,7 @@ class RosLidar(Camera, Reconfigurable):
 
     For this integration we require the ros topic to consume
     """
-    MODEL: ClassVar[Model] = Model(ModelFamily('viamlabs', 'ros2'), 'lidar')
+    MODEL: ClassVar[Model] = Model(ModelFamily('viam-soleng', 'ros2'), 'lidar')
     ros_topic: str
     ros_node: Node
     subscription: Subscription

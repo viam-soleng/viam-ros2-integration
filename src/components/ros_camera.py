@@ -31,7 +31,7 @@ class RosCamera(Camera, Reconfigurable):
     """
     RosCamera converts ROS Image message to Viam Image
     """
-    MODEL: ClassVar[Model] = Model(ModelFamily("viamlabs", "ros2"), "camera")
+    MODEL: ClassVar[Model] = Model(ModelFamily('viam-soleng', 'ros2'), 'camera')
 
     # Instance variables
     ros_topic: str

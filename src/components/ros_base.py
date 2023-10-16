@@ -37,7 +37,7 @@ class RosBase(Base, Reconfigurable):
     """
     RosBase represents a wheeled base that supports Twist Messages
     """
-    MODEL: ClassVar[Model] = Model(ModelFamily('viamlabs', 'ros2'), 'base')
+    MODEL: ClassVar[Model] = Model(ModelFamily('viam-soleng', 'ros2'), 'base')
     is_base_moving: bool
     lock: Lock
     publisher: Publisher

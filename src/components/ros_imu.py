@@ -66,7 +66,7 @@ class RosImu(MovementSensor, Reconfigurable):
     RosImu converts ROS IMU message to movementsensor values to be used
     by the viam RDK
     """
-    MODEL: ClassVar[Model] = Model(ModelFamily('viamlabs', 'ros2'), 'imu')
+    MODEL: ClassVar[Model] = Model(ModelFamily('viam-soleng', 'ros2'), 'imu')
     ros_topic: str
     ros_node: Node
     subscription: Subscription

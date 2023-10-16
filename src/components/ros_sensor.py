@@ -37,7 +37,7 @@ class RosSensor(Sensor, Reconfigurable):
     The sensor will then use the standard message functions to dynamically
     build retrieve the results
     """
-    MODEL: ClassVar[Model] = Model(ModelFamily('viamlabs', 'ros2'), 'sensor')
+    MODEL: ClassVar[Model] = Model(ModelFamily('viam-soleng', 'ros2'), 'sensor')
     ros_topic: str
     ros_node: ViamRosNode
     ros_msg_type: str
