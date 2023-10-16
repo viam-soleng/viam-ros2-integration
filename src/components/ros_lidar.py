@@ -114,8 +114,7 @@ class RosLidar(Camera, Reconfigurable):
         """
         subscriber_callback to listen for laser scan messages
         """
-        with self.lock:
-            self.msg = msg
+        self.msg = msg
 
     async def get_image(self, mime_type: str='', *, timeout: Optional[float]=None, **kwargs) -> Union[Image, RawImage]:
         """
@@ -144,17 +143,20 @@ class RosLidar(Camera, Reconfigurable):
         get_point_cloud
         In viam lidar points are represented by point cloud elements,
         """
-        if self.msg is None:
+        with self.lock:
+            msg = self.msg
+
+        if msg is None:
             raise Exception('laserscan msg not ready')
 
         pdata = []
-        for i, r in enumerate(self.msg.ranges):
-            if r < self.msg.range_min or r > self.msg.range_max:
+        for i, r in enumerate(msg.ranges):
+            if r < msg.range_min or r > msg.range_max:
                 continue
 
-            ang = self.msg.angle_min + (float(i) * self.msg.angle_increment)
-            y = math.sin(ang) * r
+            ang = msg.angle_min + (float(i) * msg.angle_increment)
             x = math.cos(ang) * r
+            y = math.sin(ang) * r
             pdata.append(x)
             pdata.append(y)
             pdata.append(float(0))

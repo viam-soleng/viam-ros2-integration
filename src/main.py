@@ -39,6 +39,9 @@ async def main(addr: str) -> None:
         global viam_node
         logger.info('starting ros2 module server')
 
+        for key in os.environ.keys():
+            logger.debug(f'ENV: {key} {os.environ[key]}')
+
         # setup viam ros node & do we need to do work in finally
         nodename = ''
         namespace = ''

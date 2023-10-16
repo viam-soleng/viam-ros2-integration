@@ -65,7 +65,17 @@ class RosBase(Base, Reconfigurable):
         publish_time: the rate at which to publish messages in seconds
         """
         topic = config.attributes.fields['ros_topic'].string_value
-        publish_time = float(config.attributes.fields['publish_rate'].string_value)
+        publish_time = config.attributes.fields['publish_time'].string_value
+
+        if publish_time == '':
+            raise Exception('time (in seconds) required as float')
+        else:
+            try:
+                publish_time = float(publish_time)
+                if publish_time == 0.0:
+                    raise Exception('time (in seconds) required as float')
+            except ValueError as ve:
+                raise Exception(f'invalid value for time (in seconds): {ve}')
 
         if topic == '':
             raise Exception('ros_topic required')

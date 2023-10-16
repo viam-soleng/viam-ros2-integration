@@ -4,15 +4,18 @@ sensor.py
 We treat all non-specific topics as sensors right now
 """
 import importlib
+import numpy as np
 import threading
 
 import rclpy
 from array import array
+from logging import Logger
 from threading import Lock
 from utils import RclpyNodeManager
 from typing import Any, ClassVar, Mapping, Optional, Sequence
 from typing_extensions import Self
 from viam.components.sensor import Sensor
+from viam.logging import getLogger
 from viam.module.types import Reconfigurable
 from viam.proto.app.robot import ComponentConfig
 from viam.proto.common import ResourceName
@@ -20,6 +23,8 @@ from viam.resource.base import ResourceBase
 from viam.resource.registry import Registry, ResourceCreatorRegistration
 from viam.resource.types import Model, ModelFamily
 from .viam_ros_node import ViamRosNode
+
+logger: Logger = getLogger(__name__)
 
 
 class RosSensor(Sensor, Reconfigurable):
@@ -127,8 +132,7 @@ class RosSensor(Sensor, Reconfigurable):
         """
         callback for the subscriber
         """
-        with self.lock:
-            self.msg = msg
+        self.msg = msg
 
     async def get_readings(
         self,
@@ -149,9 +153,11 @@ class RosSensor(Sensor, Reconfigurable):
         :param kwargs:
         :return:
         """
-        if self.msg is not None:
-            t_msg = self.msg
-            return build_msg(t_msg)
+        with self.lock:
+            msg = self.msg
+
+        if msg is not None:
+            return build_msg(msg)
         return {'value': 'NOT_READY'}
 
 
@@ -180,7 +186,7 @@ def build_msg(msg):
         msg_type = type(msg)
         # for list types we must analyze each element as it could be a ROS type
         # which needs further decomposition
-        if msg_type is list or msg_type is tuple or msg_type is set or msg_type is array:
+        if msg_type is list or msg_type is tuple or msg_type is set or msg_type is array or msg_type is np.ndarray:
             l_data = []
             for value in msg:
                 l_data.append(build_msg(value))
