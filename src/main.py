@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
-# TODO: handler does not seem to execute properly
 import asyncio
+import os
 import signal
 import sys
 
@@ -25,7 +25,6 @@ viam_node = None
 
 def sigterm_handler(_signo, _stack_frame):
     """
-    might not be needed
 
     :param _signo:
     :param _stack_frame:
@@ -41,9 +40,23 @@ async def main(addr: str) -> None:
         global viam_node
         logger.info('starting ros2 module server')
 
+        for key in os.environ.keys():
+            logger.debug(f'ENV: {key} {os.environ[key]}')
+
         # setup viam ros node & do we need to do work in finally
+        nodename = ''
+        namespace = ''
+
+        if 'VIAM_NODE_NAME' in os.environ and os.environ['VIAM_NODE_NAME'] != '':
+            nodename = os.environ['VIAM_NODE_NAME']
+        else:
+            raise Exception('VIAM_NODE_NAME environment variable required, see INSTALL.md')
+
+        if 'VIAM_ROS_NAMESPACE' in os.environ and os.environ['VIAM_ROS_NAMESPACE'] != '':
+            namespace = os.environ['VIAM_ROS_NAMESPACE']
+
         rclpy_mgr = RclpyNodeManager.get_instance()
-        viam_node = ViamRosNode.get_viam_ros_node()
+        viam_node = ViamRosNode.get_viam_ros_node(node_name=nodename, namespace=namespace)
         rclpy_mgr.spin_and_add_node(viam_node)
 
         m = Module(addr)
@@ -54,6 +67,8 @@ async def main(addr: str) -> None:
         m.add_model_from_registry(Camera.SUBTYPE, RosCamera.MODEL)
         m.add_model_from_registry(ROS2LoggerService.SUBTYPE, MyROS2LoggerService.MODEL)
         await m.start()
+    except Exception as e:
+        raise Exception(f'Error occured starting module: {e}')
     finally:
         rclpy_mgr.shutdown()
 
