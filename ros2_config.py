@@ -6,6 +6,8 @@ This script will:
 2. build configurations for what is supported
 3. give options for other elements
 4. produce sample message conversions?
+
+TODO: under construction
 """
 import argparse
 
