@@ -33,7 +33,7 @@ class RclpyNodeManager:
         self.logger.debug('RclpyNodeManager: initialized rclpy')
         self.executor = rclpy.executors.MultiThreadedExecutor()
         self.executor_thread = None
-        self.logger.debug(f'Created RclpyNodeManager {self.executor}')
+        self.logger.info(f'Created RclpyNodeManager {self.executor}')
 
     def spin_and_add_node(self, node):
         self.logger.debug(f'RclpyNodeManager: attempting to add: {node.get_name()}')
@@ -49,7 +49,7 @@ class RclpyNodeManager:
         self.logger.debug(f'RclpyNodeManager: attempting to remove node: {node.get_name()}')
         for n in self.executor.get_nodes():
             if n.get_name() == node.get_name():
-                self.logger.info(f'RclpyNodeManager: found {node.get_name()}, removing node')
+                self.logger.debug(f'RclpyNodeManager: found {node.get_name()}, removing node')
                 self.executor.remove_node(node)
         self.logger.debug(f'RclpyNodeManager: successfully remove node: {node.get_name()}')
 
