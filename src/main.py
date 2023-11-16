@@ -7,12 +7,13 @@ import sys
 
 from viam.components.base import Base
 from viam.components.camera import Camera
+from viam.components.generic import Generic
 from viam.components.movement_sensor import MovementSensor
 from viam.components.sensor import Sensor
 from viam.logging import getLogger
 from viam.module.module import Module
 
-from components import RosBase, RosCamera, RosImu, RosLidar, RosSensor, ViamRosNode
+from components import RosBase, RosCamera, RosImu, RosLidar, RosSensor, RosTopicPublisher, ViamRosNode
 
 from services.ros2_logger import MyROS2LoggerService, ROS2LoggerService
 from utils import RclpyNodeManager
@@ -64,6 +65,7 @@ async def main(addr: str) -> None:
         m.add_model_from_registry(MovementSensor.SUBTYPE, RosImu.MODEL)
         m.add_model_from_registry(Camera.SUBTYPE, RosLidar.MODEL)
         m.add_model_from_registry(Sensor.SUBTYPE, RosSensor.MODEL)
+        m.add_model_from_registry(Generic.SUBTYPE, RosTopicPublisher.MODEL)
         m.add_model_from_registry(Camera.SUBTYPE, RosCamera.MODEL)
         m.add_model_from_registry(ROS2LoggerService.SUBTYPE, MyROS2LoggerService.MODEL)
         await m.start()
