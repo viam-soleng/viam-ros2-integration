@@ -2,7 +2,7 @@
   "module_id": "viam-soleng:viam-ros2-integration",
   "visibility": "public",
   "url": "https://github.com/viam-soleng/viam-ros2-integration",
-  "description": "Use Viam features on top of your ROS 2 robot.",
+  "description": "Use Viam features on top of your ROS 2 robot, for more information please see: \"https://github.com/viam-soleng/viam-ros2-integration/README.md",
   "models": [
     {
       "api": "rdk:component:base",

@@ -1,4 +1,10 @@
-# Installing Ros Module
+# Installing ROS Module Locally
+
+We currently support two ways of deploying the ROS2 module to the Viam process:
+1. Through the [Viam Registry](https://app.viam.com/registry): more information can be found [here](https://docs.viam.com/registry/)
+2. Build & Install locally: Typically used during development
+
+
 
 These configurations have been tested on turtlebot4 machines, where we have had multiple systems
 in one office which required testing with namespaces as well as domain ids.
@@ -32,18 +38,11 @@ which shows how to configure the `UDP4` transport.
 Based on the configuration you are using replace the contents of the xml file for your ROS2 DDS configuration
 with the ones found in the link above.
 
-### Configuration Files
-Once viam is installed on the server, the next step will be to create a file for our ROS2 environemnt,
-this file should be stored in:
+If we are using docker, we should not require any changes to our system.
 
-```shell
-/etc/viam/setup.bash
-```
+### Configuration
 
-We have provided an example configure [here](./sample_configs/setup.bash)
 
-This file should contain you ROS2 environment scripts as well as the `VIAM_NODE_NAME` which is used by
-the python process to start the viam integration.
 
 # Future Improvements
 1. module config: jira has been filed, this will support:

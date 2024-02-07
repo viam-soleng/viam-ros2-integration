@@ -41,6 +41,7 @@ class RosCamera(Camera, Reconfigurable):
     lock: Lock
     image: ROSImage
     bridge: CvBridge
+    encoding: str                   # supported encoding found in sensor_msgs/image_encoding.hpp
 
     @classmethod
     def new(
@@ -77,6 +78,12 @@ class RosCamera(Camera, Reconfigurable):
         reconfigure is called when new is called as well as when the RDK configuration is
         updated, during this process we will update the ros node with the new configuration
         """
+        self.encoding = config.attributes.fields['encoding'].string_value
+        if self.encoding is None:
+            self.encoding = 'passthrough'
+        else:
+            self.encoding = self.encoding.lower().strip()
+
         self.ros_topic = config.attributes.fields['ros_topic'].string_value
         if self.ros_node is not None:
             if self.subscription is not None:
@@ -118,7 +125,7 @@ class RosCamera(Camera, Reconfigurable):
         if img is None:
             return Image.new(mode='RGB', size=(250, 250))
         else:
-            return Image.fromarray(self.bridge.imgmsg_to_cv2(img, desired_encoding='passthrough'))
+            return Image.fromarray(self.bridge.imgmsg_to_cv2(img, desired_encoding=self.encoding))
 
     async def get_images(
         self,

@@ -9,7 +9,7 @@ to wrap a core set of topics to read & write data to our ROS robot.
 
 ### Supported Conversions
 This integration supports the ability to convert any message to a viam compatible message, for certain messages we 
-convert to meaningful components to allow for richer integrations.
+convert to meaningful components to allow for richer Viam integrations.
 
 1. Twist Messages to Viam Base Component: this supports sending move commands from viam and translating to ROS2 twist 
 messages.
@@ -22,8 +22,6 @@ above conversions [1-3]) to be collected and sent to the viam cloud to allow use
 
 ### Installation
 
-For detailed instructions see [INSTALL.md](./INSTALL.md)
-
 #### Install Viam
 To install viam follow the instructions on our [docs](https://docs.viam.com/installation/)
 
@@ -31,18 +29,29 @@ To install viam follow the instructions on our [docs](https://docs.viam.com/inst
 If we are using fast DDS we need to first enable fast DDS to use UDP only, the [fastdd_rpi.xml](./sample_configs/fastdds_rpi.xml) 
 is an example of what the configuration should look like.
 
-#### Prepare ROS2 Environment
-Every ROS2 environment potentially has a custom configuration, this includes namespaces, environment variables etc.
-Before installing the module we need to create a file `/etc/viam/setup.bash` which sources all the environments needed.
 
 #### Deploy modular resource
-To install, we can choose this module from our module registry and install it, use the [sample_config.json](./sample_configs/sample_config.json) 
-to configure your robot.
+To install, we can choose this module from our [module registry](https://app.viam.com/registry) and install it, use
+the [sample_config.json](./sample_configs/sample_config.json) to configure your robot.
 
-### Configuration
+#### Prepare ROS2 Environment
+Every ROS2 environment potentially has a custom configuration, this includes namespaces, environment variables etc.
+Once we selected the module we are deploying we need to add the `env` key to the ROS2 module json which contains a 
+json document of `ENV: VAR` pairs.
 
+##### Supported Variables
 
-### Viam running as root and rmw_fastrtps_cpp
+1. **ROS_ENV**: path to ros setup.bash, for example: `/opt/ros2/humble/setup.bash`
+2. **OVERLAYS**: one or more custom overlays which hold our specific code, for example: `/path/to/ws1/setup.bash:/path/to/ws2/setup.bash`
+3. **VIAM_NODE_NAME**: the name of the ros node to be created for the module, the default name is: `viam_node`
+4. **VIAM_ROS_NAMESPACE**: the name of the ros namespace if one is used
+5. **CACHE_DIR**: a path to a cache directory
+
+#### Install Locally
+
+When developing, follow the instructions here: [INSTALL.md](./INSTALL_LOCALLY)
+
+### NOTE: Viam running as root and rmw_fastrtps_cpp
 By default, rmw_fastrtps_cpp uses [eProsima](https://www.eprosima.com/index.php) DDS implementation, 
 which makes use of [shared memory transports](https://fast-dds.docs.eprosima.com/en/latest/fastdds/transport/shared_memory/shared_memory.html)
 when communication is between entities running on the same processing unit (or host).

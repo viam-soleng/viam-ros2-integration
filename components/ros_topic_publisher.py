@@ -1,10 +1,8 @@
 import logging
 from threading import Lock
-import viam
 from std_msgs.msg import String
-from utils import RclpyNodeManager
 from viam.logging import getLogger
-from typing import Any, ClassVar, Dict, Mapping, Optional, Sequence, Tuple
+from typing import ClassVar, Mapping, Optional, Sequence
 from typing_extensions import Self
 from viam.components.generic import Generic
 from viam.module.types import Reconfigurable
@@ -14,10 +12,8 @@ from viam.resource.base import ResourceBase
 from viam.resource.registry import Registry, ResourceCreatorRegistration
 from viam.resource.types import Model, ModelFamily
 from viam.utils import ValueTypes
-from rclpy.node import Node
 from rclpy.publisher import Publisher
 from rclpy.timer import Rate
-from geometry_msgs.msg import Twist
 from .viam_ros_node import ViamRosNode
 
 logger = getLogger(__name__)
@@ -56,7 +52,6 @@ class RosTopicPublisher(Generic, Reconfigurable):
 
     def ros_publisher_cb(self):
         self.publisher.publish(self.msg)
-
 
     def reconfigure(self, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]):
         self.ros_topic = config.attributes.fields['ros_topic'].string_value

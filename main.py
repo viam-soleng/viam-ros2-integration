@@ -51,7 +51,7 @@ async def main(addr: str) -> None:
         if 'VIAM_NODE_NAME' in os.environ and os.environ['VIAM_NODE_NAME'] != '':
             nodename = os.environ['VIAM_NODE_NAME']
         else:
-            raise Exception('VIAM_NODE_NAME environment variable required, see INSTALL.md')
+            raise Exception('VIAM_NODE_NAME environment variable required, see INSTALL_LOCALLY.md')
 
         if 'VIAM_ROS_NAMESPACE' in os.environ and os.environ['VIAM_ROS_NAMESPACE'] != '':
             namespace = os.environ['VIAM_ROS_NAMESPACE']
@@ -70,7 +70,7 @@ async def main(addr: str) -> None:
         m.add_model_from_registry(ROS2LoggerService.SUBTYPE, MyROS2LoggerService.MODEL)
         await m.start()
     except Exception as e:
-        raise Exception(f'Error occured starting module: {e}')
+        raise Exception(f'Error occurred starting module: {e}')
     finally:
         rclpy_mgr.shutdown()
 
