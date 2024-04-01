@@ -15,11 +15,15 @@ TODO: add attributes to support different base types, currently our publisher wi
       can cause issues when we attempt to call base actions like "dock" etc.
       More testing will be needed to ensure the base works as expected
 """
+import importlib
+import logging
 from threading import Lock
-import viam
-from typing import Any, ClassVar, Dict, Mapping, Optional, Sequence, Tuple
+from typing import Any, ClassVar, Dict, List, Mapping, Optional, Sequence, Tuple, Union
 from typing_extensions import Self
+
+import viam
 from viam.components.base import Base
+from viam.logging import getLogger
 from viam.module.types import Reconfigurable
 from viam.proto.app.robot import ComponentConfig
 from viam.proto.common import ResourceName
@@ -27,6 +31,8 @@ from viam.resource.base import ResourceBase
 from viam.resource.registry import Registry, ResourceCreatorRegistration
 from viam.resource.types import Model, ModelFamily
 from viam.utils import ValueTypes
+from rclpy.action import ActionClient
+from rclpy.client import Client
 from rclpy.publisher import Publisher
 from rclpy.timer import Timer
 from geometry_msgs.msg import Twist
@@ -46,7 +52,11 @@ class RosBase(Base, Reconfigurable):
     ros_node: ViamRosNode
     ros_topic: str
     twist_msg: Twist
-
+    ros_actions: List[Dict[str, Any]]
+    ros_services: List[Dict[str, Any]]
+    logger: logging.Logger
+    ros_action_client: Union[ActionClient, None]
+    ros_service_client: Union[Client, None]
     @classmethod
     def new(cls, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]) -> Self:
         """
@@ -54,6 +64,9 @@ class RosBase(Base, Reconfigurable):
         """
         base = cls(config.name)
         base.ros_node = None
+        base.ros_action_client = None
+        base.ros_service_client = None
+        base.logger = getLogger(base.__class__.__name__)
         base.reconfigure(config, dependencies)
         return base
 
@@ -88,8 +101,7 @@ class RosBase(Base, Reconfigurable):
     def ros_publisher_cb(self) -> None:
         """
         ros_publisher_cb will be called by the ros node to publish twist messages
-        TODO: we will have to introduce logic here to stop publishing if
-              required
+        TODO: we will have to introduce logic here to stop publishing if required
         """
         self.publisher.publish(self.twist_msg)
 
@@ -101,6 +113,9 @@ class RosBase(Base, Reconfigurable):
         """
         self.ros_topic = config.attributes.fields['ros_topic'].string_value
         self.publish_time = float(config.attributes.fields['publish_time'].string_value)
+        self.ros_actions = config.attributes.fields['ros_actions'].list_value
+        self.ros_services = config.attributes.fields['ros_services'].list_values
+
         self.twist_msg = Twist()
 
         if self.ros_node is not None:
@@ -215,11 +230,97 @@ class RosBase(Base, Reconfigurable):
             **kwargs
     ) -> Mapping[str, ValueTypes]:
         """
-        Currently not supported
-
-        TODO: add custom base-related services here
+        {
+         "cmd_type": "[ACTION|SERVICE]",
+         "params": {
+          "id": "MATCH_OF_WHATS_IN_VIAM_CONFIG_ATTRIBUTES",
+          "name": "name of action or service",
+          "type": "dot path to datatype"
+         }
+        }
         """
-        raise NotImplementedError()
+        ret: Dict = {}
+        if 'cmd_type' in command:
+            if command['cmd_type'] == 'ACTION':
+                # execute action
+                ret['result'] = self.execute_action(command['params'])
+                pass
+            elif command['cmd_type'] == 'SERVICE':
+                ret['result'] = self.execute_service(command['params'])
+                # execute service
+                pass
+            else:
+                # bad command type
+                pass
+        else:
+            # bad commands
+            pass
+        return ret
+
+    def execute_action(self, params: Any) -> Dict[str, Any]:
+        action_id = params['id'] if 'id' in params else None
+        action_name = params['name'] if 'name' in params else None
+        action_type = params['type'] if 'type' in params else None
+
+        ret = {'result': {}}
+
+        if action_id is None or action_name is None or action_type is None:
+            self.logger.warning(
+                f'action params not set properly (id:{action_id},name:{action_name},type:{action_type})'
+            )
+            ret['result']['success'] = False
+            ret['result']['message'] = 'action params require id, name and type'
+        else:
+            self.logger.info(f'attempting execution of {action_id}')
+            did_execute = False
+
+            for action in self.ros_actions:
+                if action_id == action['id']:
+                    # execute action
+                    did_execute = True
+                    pass
+            if not did_execute:
+                # return message here
+                pass
+
+        for key in command.keys():
+            for action in self.ros_actions:
+                if action['id'] == key:
+                    self.logger.info(f'executing action: {key}:{action}')
+                    action_name = action['name']
+                    action_type = action['type']
+                    if action_name == '':
+                        # need to fail here
+                        pass
+                    # lets attempt to import the type
+                    if action_type == '':
+                        # need to fail here
+                        pass
+                    type_info = action_type.rsplit('.', 1)
+                    lib = importlib.import_module(type_info[0])
+                    action_cls = getattr(lib, type_info[1])
+                    action_client = ActionClient(ViamRosNode.node, action_cls, action_name)
+                    action_client.send_goal_async(action_cls.Goal(), self.action_feedback)
+            for service in self.ros_services:
+                if service['id'] == key:
+                    self.logger.info(f'executing service: {key}:{service}')
+        return {
+            'result': {
+                'success': False,
+                'message': 'action_not_implemented'
+            }
+        }
+
+    def execute_service(self, params: Any) -> Dict[str, Any]:
+        return {
+            'result': {
+                'success': False,
+                'message': 'service_not_implemented'
+            }
+        }
+
+    def action_feedback(self, msg):
+        self.logger.info(f'feedback received: {msg}')
 
 
 """

@@ -4,7 +4,7 @@ import asyncio
 import os
 import signal
 import sys
-
+from typing import Union
 from viam.components.base import Base
 from viam.components.camera import Camera
 from viam.components.generic import Generic
@@ -20,7 +20,7 @@ from utils import RclpyNodeManager
 
 logger = getLogger(__name__)
 
-rclpy_mgr = None
+rclpy_mgr: Union[RclpyNodeManager, None] = None
 viam_node = None
 
 
@@ -36,28 +36,27 @@ def sigterm_handler(_signo, _stack_frame):
 
     
 async def main(addr: str) -> None:
+    global rclpy_mgr
+    global viam_node
+    logger.info('starting ros2 module server')
     try:
-        global rclpy_mgr
-        global viam_node
-        logger.info('starting ros2 module server')
-
         for key in os.environ.keys():
             logger.debug(f'ENV: {key} {os.environ[key]}')
 
         # setup viam ros node & do we need to do work in finally
-        nodename = ''
-        namespace = ''
+        node_name: str = 'VIAM_NODE'
+        namespace: str = ''
 
         if 'VIAM_NODE_NAME' in os.environ and os.environ['VIAM_NODE_NAME'] != '':
-            nodename = os.environ['VIAM_NODE_NAME']
+            node_name = os.environ['VIAM_NODE_NAME']
         else:
-            raise Exception('VIAM_NODE_NAME environment variable required, see INSTALL_LOCALLY.md')
+            logger.info(f'Using default VIAM_NODE_NAME of {node_name}')
 
         if 'VIAM_ROS_NAMESPACE' in os.environ and os.environ['VIAM_ROS_NAMESPACE'] != '':
             namespace = os.environ['VIAM_ROS_NAMESPACE']
 
         rclpy_mgr = RclpyNodeManager.get_instance()
-        viam_node = ViamRosNode.get_viam_ros_node(node_name=nodename, namespace=namespace)
+        viam_node = ViamRosNode.get_viam_ros_node(node_name=node_name, namespace=namespace)
         rclpy_mgr.spin_and_add_node(viam_node)
 
         m = Module(addr)
@@ -72,7 +71,8 @@ async def main(addr: str) -> None:
     except Exception as e:
         raise Exception(f'Error occurred starting module: {e}')
     finally:
-        rclpy_mgr.shutdown()
+        if rclpy_mgr is not None:
+            rclpy_mgr.shutdown()
 
 
 if __name__ == '__main__':
