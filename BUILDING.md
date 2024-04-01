@@ -2,7 +2,7 @@
 
 Since this a Python application very little is needed to set up the environment. We have included the base set of 
 requirements for the Viam libraries with the assumption that ROS2 python packages are installed and sourced 
-from the ROS environment scripts.
+from the ROS2 environment scripts.
 
 To get started, fork the repository to your github account.
 

@@ -1,6 +1,7 @@
 # ROS2 Logger Service
 
-Takes [ROS log messages](https://docs.ros2.org/foxy/api/rcl_interfaces/msg/Log.html) from a configurable ros topic and maps them based upon ROS severity level to Viam log types. Additionally you can dynamically reconfigure the detail level of log entries sent to the Viam cloud.
+Takes [ROS log messages](https://docs.ros2.org/foxy/api/rcl_interfaces/msg/Log.html) from a configurable ros topic and maps them based upon ROS severity level to Viam log types.
+Additionally you can dynamically reconfigure the detail level of log entries sent to the Viam cloud.
 
 
 ## Service Configuration

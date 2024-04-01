@@ -41,10 +41,10 @@ json document of `ENV: VAR` pairs.
 
 ##### Supported Variables
 
-1. **ROS_ENV**: path to ros setup.bash, for example: `/opt/ros2/humble/setup.bash`
+1. **ROS_ENV**: path to ROS2 setup.bash, for example: `/opt/ros2/humble/setup.bash`
 2. **OVERLAYS**: one or more custom overlays which hold our specific code, for example: `/path/to/ws1/setup.bash:/path/to/ws2/setup.bash`
-3. **VIAM_NODE_NAME**: the name of the ros node to be created for the module, the default name is: `viam_node`
-4. **VIAM_ROS_NAMESPACE**: the name of the ros namespace if one is used
+3. **VIAM_NODE_NAME**: the name of the ROS2 node to be created for the module, the default name is: `VIAM_NODE`
+4. **VIAM_ROS_NAMESPACE**: the name of the ROS2 namespace if one is used
 5. **CACHE_DIR**: a path to a cache directory
 
 #### Install Locally
@@ -62,7 +62,18 @@ the example config used in turtlebot4.
 
 For non-turtlebot4 implementations, update the specific fastdds_rpi.xml file in you implementation.
 
+### NOTE: ros_camera config on turtlebot4
+
+The Turtlebot4 machines were deployed with Oak-D cameras, while these robots are docked, the camera is
+turned off. On first boot, the camera will not display an image until the robot moves off the dock. 
+
+When the robot docks, the last image will continue to be shown. 
+
+We will need to think about providing a general solution to this problem rather than implementing something
+specific to the Turtlebot4.
+
 ## Contact & Contributions
+
 We welcome pull requests and issues, if there are any issues you can email us at:
 
 * [shawn@viam.com](mailto:shawn@viam.com)

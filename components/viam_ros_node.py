@@ -33,7 +33,7 @@ class ViamRosNode(Node):
             # this check is also done in main.py - leave here for testing purposes
             if node_name is None or node_name == '':
                 if 'VIAM_NODE_NAME' in os.environ and os.environ['VIAM_NODE_NAME'] != '':
-                    nodename = os.environ['VIAM_NODE_NAME']
+                    node_name = os.environ['VIAM_NODE_NAME']
                 else:
                     raise Exception(
                         'cannot find valid viam node name in environment,'

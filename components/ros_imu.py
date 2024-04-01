@@ -224,6 +224,7 @@ class RosImu(MovementSensor, Reconfigurable):
         """
         get_accuracy is not implemented
         """
+        return {}
         raise Unimplemented()
 
     async def get_properties(self, *, timeout: Optional[float] = None, **kwargs) -> MovementSensor.Properties:
