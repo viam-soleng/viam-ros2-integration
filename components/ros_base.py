@@ -230,6 +230,10 @@ class RosBase(Base, Reconfigurable):
             **kwargs
     ) -> Mapping[str, ValueTypes]:
         """
+        the do_command supports execution ROS service calls and action calls
+
+        TODO:
+
         {
          "cmd_type": "[ACTION|SERVICE]",
          "params": {
@@ -258,6 +262,9 @@ class RosBase(Base, Reconfigurable):
         return ret
 
     def execute_action(self, params: Any) -> Dict[str, Any]:
+        """
+
+        """
         action_id = params['id'] if 'id' in params else None
         action_name = params['name'] if 'name' in params else None
         action_type = params['type'] if 'type' in params else None
@@ -276,40 +283,21 @@ class RosBase(Base, Reconfigurable):
 
             for action in self.ros_actions:
                 if action_id == action['id']:
-                    # execute action
-                    did_execute = True
-                    pass
-            if not did_execute:
-                # return message here
-                pass
+                    try:
+                        # execute action
+                        type_info = action_type.rsplit('.', 1)
+                        lib = importlib.import_module(type_info[0])
+                        action_cls = getattr(lib, type_info[1])
+                        action_client = ActionClient(ViamRosNode.node, action_cls, action_name)
+                        action_client.wait_for_server()
+                        action_client.send_goal_async(action_cls.Goal(), self.action_feedback)
+                        did_execute = True
+                    except Exception as e:
+                        self.logger.error(f'problem executing {action_id}: {e}')
 
-        for key in command.keys():
-            for action in self.ros_actions:
-                if action['id'] == key:
-                    self.logger.info(f'executing action: {key}:{action}')
-                    action_name = action['name']
-                    action_type = action['type']
-                    if action_name == '':
-                        # need to fail here
-                        pass
-                    # lets attempt to import the type
-                    if action_type == '':
-                        # need to fail here
-                        pass
-                    type_info = action_type.rsplit('.', 1)
-                    lib = importlib.import_module(type_info[0])
-                    action_cls = getattr(lib, type_info[1])
-                    action_client = ActionClient(ViamRosNode.node, action_cls, action_name)
-                    action_client.send_goal_async(action_cls.Goal(), self.action_feedback)
-            for service in self.ros_services:
-                if service['id'] == key:
-                    self.logger.info(f'executing service: {key}:{service}')
-        return {
-            'result': {
-                'success': False,
-                'message': 'action_not_implemented'
-            }
-        }
+            if not did_execute:
+                # return message here (failures)
+                pass
 
     def execute_service(self, params: Any) -> Dict[str, Any]:
         return {
