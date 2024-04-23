@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package viamlabs.service.ros2_service.v1;
+
+import "google/api/annotations.proto";
+
+service ROS2ServiceService {
+    rpc Call (ServiceRequest) returns (ServiceResponse) {
+        option (google.api.http) = {
+            post: "/viamsoleng/api/v1/service/ros2_service/{name}/call"
+        };
+    }
+
+    rpc Destroy (ServiceRequest) returns (ServiceResponse) {
+        option (google.api.http) = {
+            post: "/viamsoleng/api/v1/service/ros2_service/{name}/destroy"
+        };
+    }
+
+    rpc Status (ServiceRequest) returns (ServiceResponse) {
+        option (google.api.http) = {
+            post: "/viamsoleng/api/v1/service/ros2_service/{name}/status"
+        };
+    }
+}
+
+message ServiceRequest {
+    string name = 1;
+    string service = 2;
+}
+
+message ServiceResponse {
+    string response = 1;
+}

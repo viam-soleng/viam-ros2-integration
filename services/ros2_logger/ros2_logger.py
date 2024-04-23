@@ -24,8 +24,8 @@ class MyROS2LoggerService(ROS2LoggerService, Reconfigurable):
     MODEL: ClassVar[Model] = Model(ModelFamily("viam-soleng", "ros2"), "logger")
 
     # Instance variables
-    ros_topic: str # ROS topic to subscribe to
-    log_level: str # Log levels: debug, info, warn, error, critical
+    ros_topic: str  # ROS topic to subscribe to
+    log_level: str  # Log levels: debug, info, warn, error, critical
     levels = {"debug": 10, "info": 20, "warn": 30, "error": 40, "critical": 50}
     ros_node: ViamRosNode
     logger: logging.Logger
@@ -80,21 +80,23 @@ class MyROS2LoggerService(ROS2LoggerService, Reconfigurable):
         # ROS Log Messages: https://docs.ros2.org/foxy/api/rcl_interfaces/msg/Log.html
         message = f"node name: {ros_log.name}, message: {ros_log.msg}, severity level: {str(ros_log.level)}"
 
-        if ros_log.level <= 10 and ros_log.level >= self.levels[self.log_level]:
+        if 10 >= ros_log.level >= self.levels[self.log_level]:
             self.logger.debug(message)
-        elif ros_log.level <= 20 and ros_log.level >= self.levels[self.log_level]:
+        elif 20 >= ros_log.level >= self.levels[self.log_level]:
             self.logger.info(message)
-        elif ros_log.level <= 30 and ros_log.level >= self.levels[self.log_level]:
+        elif 30 >= ros_log.level >= self.levels[self.log_level]:
             self.logger.warning(message)
-        elif ros_log.level <= 40 and ros_log.level >= self.levels[self.log_level]:
+        elif 40 >= ros_log.level >= self.levels[self.log_level]:
             self.logger.error(message)
-        elif ros_log.level <= 50 and ros_log.level >= self.levels[self.log_level]:
+        elif 50 >= ros_log.level >= self.levels[self.log_level]:
             self.logger.critical(message)
         elif ros_log.level > 50:
             self.logger.info(f"{message}")
         else:
             pass
 
-
     async def status(self) -> dict:
-        return {"ros_topic": "self.ros_topic","log_level": "self.log_level"}
+        return {
+            "ros_topic": "self.ros_topic",
+            "log_level": "self.log_level"
+        }
