@@ -19,6 +19,21 @@ command:
 pip freeze -l > ./requirements.txt
 ```
 
+# Proto generation
+We make use of the [buf cli](https://buf.build/docs/installation), make sure
+this is installed as well as the python plugins:
+
+```shell
+pip install "grpclib[protobuf]"
+pip install mypy-protobuf
+
+buf mod update
+for i in `ls proto/*proto`; do buf generate $i; done
+```
+
+Note that if you install the viam-sdk it will install googleapis-common-protos
+which will cause conflicts with proto generation.
+
 ## Contributions
 We welcome pull requests and issues, if there are any issues you can email us at:
 

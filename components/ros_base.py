@@ -10,10 +10,7 @@ In viam only the Y component in the linear vector is used for wheeled bases, wit
 positive implying forward and only the Z component in the angular component is used
 for wheeled bases, with positive turning left.
 
-TODO: add attributes to support different base types, currently our publisher will
-      continue to publish messages even if the twist message vectors are all 0, this
-      can cause issues when we attempt to call base actions like "dock" etc.
-      More testing will be needed to ensure the base works as expected
+A base can also support actions and services
 """
 import importlib
 import logging
