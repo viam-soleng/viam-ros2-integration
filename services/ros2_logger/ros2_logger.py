@@ -61,7 +61,7 @@ class MyROS2LoggerService(ROS2LoggerService, Reconfigurable):
             if self.subscription is not None:
                 self.ros_node.destroy_subscription(self.subscription)
         else:
-            self.ros_node = ViamRosNode.get_viam_ros_node()
+            self.ros_node = ViamRosNode.node
 
         self.log_level = config.attributes.fields["log_level"].string_value
 
