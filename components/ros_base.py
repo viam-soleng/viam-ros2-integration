@@ -15,7 +15,7 @@ A base can also support actions and services
 import importlib
 import logging
 from threading import Lock
-from typing import Any, ClassVar, Dict, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import Any, ClassVar, Dict, Mapping, Optional, Sequence
 from typing_extensions import Self
 
 import viam
@@ -28,8 +28,6 @@ from viam.resource.base import ResourceBase
 from viam.resource.registry import Registry, ResourceCreatorRegistration
 from viam.resource.types import Model, ModelFamily
 from viam.utils import ValueTypes
-from rclpy.action import ActionClient
-from rclpy.client import Client
 from rclpy.publisher import Publisher
 from rclpy.timer import Timer
 from geometry_msgs.msg import Twist
@@ -49,11 +47,8 @@ class RosBase(Base, Reconfigurable):
     ros_node: ViamRosNode
     ros_topic: str
     twist_msg: Twist
-    ros_actions: List[Dict[str, Any]]
-    ros_services: List[Dict[str, Any]]
     logger: logging.Logger
-    ros_action_client: Union[ActionClient, None]
-    ros_service_client: Union[Client, None]
+
     @classmethod
     def new(cls, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]) -> Self:
         """
@@ -110,8 +105,6 @@ class RosBase(Base, Reconfigurable):
         """
         self.ros_topic = config.attributes.fields['ros_topic'].string_value
         self.publish_time = float(config.attributes.fields['publish_time'].string_value)
-        self.ros_actions = config.attributes.fields['ros_actions'].list_value
-        self.ros_services = config.attributes.fields['ros_services'].list_values
 
         self.twist_msg = Twist()
 
@@ -228,84 +221,9 @@ class RosBase(Base, Reconfigurable):
     ) -> Mapping[str, ValueTypes]:
         """
         the do_command supports execution ROS service calls and action calls
-
-        TODO:
-
-        {
-         "cmd_type": "[ACTION|SERVICE]",
-         "params": {
-          "id": "MATCH_OF_WHATS_IN_VIAM_CONFIG_ATTRIBUTES",
-          "name": "name of action or service",
-          "type": "dot path to datatype"
-         }
-        }
         """
         ret: Dict = {}
-        if 'cmd_type' in command:
-            if command['cmd_type'] == 'ACTION':
-                # execute action
-                ret['result'] = self.execute_action(command['params'])
-                pass
-            elif command['cmd_type'] == 'SERVICE':
-                ret['result'] = self.execute_service(command['params'])
-                # execute service
-                pass
-            else:
-                # bad command type
-                pass
-        else:
-            # bad commands
-            pass
         return ret
-
-    def execute_action(self, params: Any) -> Dict[str, Any]:
-        """
-
-        """
-        action_id = params['id'] if 'id' in params else None
-        action_name = params['name'] if 'name' in params else None
-        action_type = params['type'] if 'type' in params else None
-
-        ret = {'result': {}}
-
-        if action_id is None or action_name is None or action_type is None:
-            self.logger.warning(
-                f'action params not set properly (id:{action_id},name:{action_name},type:{action_type})'
-            )
-            ret['result']['success'] = False
-            ret['result']['message'] = 'action params require id, name and type'
-        else:
-            self.logger.info(f'attempting execution of {action_id}')
-            did_execute = False
-
-            for action in self.ros_actions:
-                if action_id == action['id']:
-                    try:
-                        # execute action
-                        type_info = action_type.rsplit('.', 1)
-                        lib = importlib.import_module(type_info[0])
-                        action_cls = getattr(lib, type_info[1])
-                        action_client = ActionClient(ViamRosNode.node, action_cls, action_name)
-                        action_client.wait_for_server()
-                        action_client.send_goal_async(action_cls.Goal(), self.action_feedback)
-                        did_execute = True
-                    except Exception as e:
-                        self.logger.error(f'problem executing {action_id}: {e}')
-
-            if not did_execute:
-                # return message here (failures)
-                pass
-
-    def execute_service(self, params: Any) -> Dict[str, Any]:
-        return {
-            'result': {
-                'success': False,
-                'message': 'service_not_implemented'
-            }
-        }
-
-    def action_feedback(self, msg):
-        self.logger.info(f'feedback received: {msg}')
 
 
 """

@@ -78,7 +78,7 @@ class RosTopicPublisher(Generic, Reconfigurable):
             **kwargs
     ):
         for key in command:
-            if key == "send":
+            if key == 'send':
                 with self.lock:
                     self.msg.data = command[key]
         return {}
