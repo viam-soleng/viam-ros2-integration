@@ -59,7 +59,7 @@ if [[ -z "${VIAM_NODE_NAME}" || "${VIAM_NODE_NAME}" == "" ]]; then
 fi
 
 if [[ -z "${VIAM_ROS_NAMESPACE}" || "${VIAM_ROS_NAMESPACE}" == "" ]]; then
-  echo "[INFO] no ROS namespace provided, plase ensure this is correct"
+  echo "[INFO] no ROS namespace provided, please ensure this is correct"
 fi
 
 # viam tools needed for utils.py

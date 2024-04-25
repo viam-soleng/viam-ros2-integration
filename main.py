@@ -16,6 +16,9 @@ from viam.module.module import Module
 from components import RosBase, RosCamera, RosImu, RosLidar, RosSensor, RosTopicPublisher, ViamRosNode
 
 from services.ros2_logger import MyROS2LoggerService, ROS2LoggerService
+from services.ros2_action import MyROS2ActionService, ROS2ActionService
+from services.ros2_service import MyROS2ServiceService, ROS2ServiceService
+
 from utils import RclpyNodeManager
 
 logger = getLogger(__name__)
@@ -67,6 +70,8 @@ async def main(addr: str) -> None:
         m.add_model_from_registry(Generic.SUBTYPE, RosTopicPublisher.MODEL)
         m.add_model_from_registry(Camera.SUBTYPE, RosCamera.MODEL)
         m.add_model_from_registry(ROS2LoggerService.SUBTYPE, MyROS2LoggerService.MODEL)
+        m.add_model_from_registry(ROS2ActionService.SUBTYPE, MyROS2ActionService.MODEL)
+        m.add_model_from_registry(ROS2ServiceService.SUBTYPE, MyROS2ServiceService.MODEL)
         await m.start()
     except Exception as e:
         raise Exception(f'Error occurred starting module: {e}')
