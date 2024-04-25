@@ -21,6 +21,7 @@ TODO:
 """
 import collections
 import importlib
+import json
 import logging
 import uuid
 
@@ -45,7 +46,7 @@ from .api import ROS2ActionService
 
 class MyROS2ActionService(ROS2ActionService, Reconfigurable):
 
-    MODEL: ClassVar[Model] = Model(ModelFamily("viam-soleng", "ros2"), "logger")
+    MODEL: ClassVar[Model] = Model(ModelFamily('viam-soleng', 'ros2'), 'action_client')
 
     # Instance variables
     ros_node: Union[ViamRosNode, None]  # ros node that the action client will use
@@ -57,7 +58,7 @@ class MyROS2ActionService(ROS2ActionService, Reconfigurable):
     results: Union[Deque, None]         # results: {id: #, name: '', time: '', status: ''}
     actions: Union[List, None]          # configured actions {name: '', type: '', class: ''},
                                         # class is added during reconfigure
-    current_actions: Union[List, None]  # current running actions: {name: '', start: '', goal_handler: '', future: ''}
+    current_actions: List               # current running actions: {name: '', start: '', goal_handler: '', future: ''}
                                         # goal_handler is a class
     lock: Lock
 
@@ -68,7 +69,7 @@ class MyROS2ActionService(ROS2ActionService, Reconfigurable):
         self.logger = getLogger(f'{__name__}.{self.__class__.__name__}')
         self.actions = None
         self.results = None
-        self.current_actions = None
+        self.current_actions = []
         self.cancel_on_reconfigure = False
         self.hold_last_n = 10
         self.action_server_timeout = 10
@@ -152,13 +153,13 @@ class MyROS2ActionService(ROS2ActionService, Reconfigurable):
             self.logger.debug('setting hold_last_n to 10 (DEFUALT)')
             self.hold_last_n = 10
         else:
-            self.hold_last_n = attributes_dict['hold_last_n']
+            self.hold_last_n = int(attributes_dict['hold_last_n'])
 
         if 'action_server_timeout' not in attributes_dict:
             self.logger.debug('setting action_server_timeout to 10 seconds (DEFAULT)')
             self.action_server_timeout = 10
         else:
-            self.action_server_timeout = attributes_dict['action_server_timeout']
+            self.action_server_timeout = int(attributes_dict['action_server_timeout'])
 
         if 'cancel_on_reconfigure' not in attributes_dict :
             self.logger.debug('setting cancel_on_reconfigure to False (DEFAULT)')
@@ -175,6 +176,8 @@ class MyROS2ActionService(ROS2ActionService, Reconfigurable):
                     # this will block (it is intended - but might need to revisit)
                     action['goal_handle'].cancel_goal()
                     self.current_actions.remove(action)
+            else:
+                self.current_actions.clear()
         else:
             self.ros_node = ViamRosNode.node
 

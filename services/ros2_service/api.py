@@ -17,7 +17,7 @@ class ROS2ServiceService(ServiceBase):
     Viam ROS 2 logger service subclass of the ServiceBase class including additional abstract methods to be implemented
     """
 
-    SUBTYPE: Final = Subtype('viam-soleng', RESOURCE_TYPE_SERVICE, 'ros2_service')
+    SUBTYPE: Final = Subtype('viam-soleng', RESOURCE_TYPE_SERVICE, 'service_client')
 
     @abc.abstractmethod
     async def call(self, goal_name: str) -> ServiceResponse:
@@ -62,13 +62,13 @@ class ROS2ServiceClient(ROS2ServiceService):
         super().__init__(name)
 
     async def call(self, goal_name: str) -> str:
-        resp: ServiceResponse = self.client.Call(ServiceRequest(name=self.name, service=goal_name))
+        resp: ServiceResponse = await self.client.Call(ServiceRequest(name=self.name, service=goal_name))
         return resp.response
 
     async def destroy(self, goal_name: str) -> str:
-        resp: ServiceResponse = self.client.Destroy(ServiceRequest(name=self.name, service=goal_name))
+        resp: ServiceResponse = await self.client.Destroy(ServiceRequest(name=self.name, service=goal_name))
         return resp.response
 
     async def status(self, goal_name: str) -> str:
-        resp: ServiceResponse = self.client.Status(ServiceRequest(name=self.name, service=goal_name))
+        resp: ServiceResponse = await self.client.Status(ServiceRequest(name=self.name, service=goal_name))
         return resp.response

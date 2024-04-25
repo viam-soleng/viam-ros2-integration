@@ -68,8 +68,8 @@ class ROS2LoggerClient(ROS2LoggerService):
         self.client = ROS2LoggerServiceStub(channel)
         super().__init__(name)
 
-    def status(self) -> dict[str, Any]:
-        resp: Response = self.client.Status(Request(name=self.name))
+    async def status(self) -> dict[str, Any]:
+        resp: Response = await self.client.Status(Request(name=self.name))
         return {
             'ros_topic': resp.ros_topic,
             'ros_log_level': resp.log_level

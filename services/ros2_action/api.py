@@ -17,7 +17,7 @@ class ROS2ActionService(ServiceBase):
     Viam ROS 2 logger service subclass of the ServiceBase class including additional abstract methods to be implemented
     """
 
-    SUBTYPE: Final = Subtype('viam-soleng', RESOURCE_TYPE_SERVICE, 'ros2_action')
+    SUBTYPE: Final = Subtype('viam-soleng', RESOURCE_TYPE_SERVICE, 'action_client')
 
     @abc.abstractmethod
     async def send_goal(self, goal_name: str) -> ActionResponse:
@@ -35,22 +35,29 @@ class ROS2ActionService(ServiceBase):
 class ROS2ActionRPCService(ROS2ActionServiceBase, ResourceRPCServiceBase):
     RESOURCE_TYPE = ROS2ActionService
 
-    async def send_message(self, stream: Stream[ActionRequest, ActionResponse]) -> None:
+    async def SendGoal(self, stream: Stream[ActionRequest, ActionResponse]) -> None:
         request = await stream.recv_message()
         assert request is not None
         name = request.name
         service = self.get_resource(name)
-        resp = await service.status()
+        resp = await service.send_goal(goal_name=request.action)
         await stream.send_message(resp)
 
-    async def SendGoal(self, stream: Stream[ActionRequest, ActionResponse]) -> None:
-        await self.send_message(stream)
-
     async def CancelGoal(self, stream: Stream[ActionRequest, ActionResponse]) -> None:
-        await self.send_message(stream)
+        request = await stream.recv_message()
+        assert request is not None
+        name = request.name
+        service = self.get_resource(name)
+        resp = await service.cancel_goal(goal_name=request.action)
+        await stream.send_message(resp)
 
     async def GoalStatus(self, stream: Stream[ActionRequest, ActionResponse]) -> None:
-        await self.send_message(stream)
+        request = await stream.recv_message()
+        assert request is not None
+        name = request.name
+        service = self.get_resource(name)
+        resp = await service.goal_status(goal_name=request.action)
+        await stream.send_message(resp)
 
 
 class ROS2ActionClient(ROS2ActionService):
@@ -61,13 +68,13 @@ class ROS2ActionClient(ROS2ActionService):
         super().__init__(name)
 
     async def goal_status(self, goal_name: str) -> str:
-        resp: ActionResponse = self.client.GoalStatus(ActionRequest(name=self.name, action=goal_name))
+        resp: ActionResponse = await self.client.GoalStatus(ActionRequest(name=self.name, action=goal_name))
         return resp.response
 
     async def cancel_goal(self, goal_name: str) -> str:
-        resp: ActionResponse = self.client.CancelGoal(ActionRequest(name=self.name, action=goal_name))
+        resp: ActionResponse = await self.client.CancelGoal(ActionRequest(name=self.name, action=goal_name))
         return resp.response
 
     async def send_goal(self, goal_name: str) -> str:
-        resp: ActionResponse = self.client.SendGoal(ActionRequest(name=self.name, action=goal_name))
+        resp: ActionResponse = await self.client.SendGoal(ActionRequest(name=self.name, action=goal_name))
         return resp.response

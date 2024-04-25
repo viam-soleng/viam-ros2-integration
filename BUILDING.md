@@ -24,7 +24,7 @@ We make use of the [buf cli](https://buf.build/docs/installation), make sure
 this is installed as well as the python plugins:
 
 ```shell
-pip install "grpclib[protobuf]"
+pip install protobuf
 pip install mypy-protobuf
 
 buf mod update

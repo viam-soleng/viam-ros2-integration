@@ -17,7 +17,7 @@ from .api import ROS2ServiceService
 
 class MyROS2ServiceService(ROS2ServiceService, Reconfigurable):
 
-    MODEL: ClassVar[Model] = Model(ModelFamily("viam-soleng", "ros2"), "ros2_service")
+    MODEL: ClassVar[Model] = Model(ModelFamily('viam-soleng', 'ros2'), 'service_client')
 
     # Instance variables
     ros_node: Union[ViamRosNode, None]
