@@ -62,7 +62,6 @@ class MyROS2ActionService(ROS2ActionService, Reconfigurable):
                                         # goal_handler is a class
     lock: Lock
 
-
     def __init__(self, name: str):
         super().__init__(name)
         self.ros_node = None
@@ -79,11 +78,11 @@ class MyROS2ActionService(ROS2ActionService, Reconfigurable):
         """
 
         """
-        goal_handler = future.result()
-
         for action in self.current_actions:
+            print(f'action: {action}')
             if action['future'] == future:
                 with self.lock:
+                    goal_handler = future.result()
                     action['goal_handler'] = goal_handler
                     if not goal_handler.accepted:
                         self.logger.error(f'goal {action["name"]}, was not accepted, removing from current actions')
@@ -202,6 +201,7 @@ class MyROS2ActionService(ROS2ActionService, Reconfigurable):
                     self.logger.error(f'ROS action server timeout({self.action_server_timeout}) exceeded')
                     self.logger.error(f'cannot continue')
                     return ActionResponse(response=f'action server timeout: {goal_name} cannot continue')
+
                 action_data = {
                     'name': action['name'],
                     'start': str(dt.now()),
