@@ -49,7 +49,7 @@ json document of `ENV: VAR` pairs.
 
 #### Install Locally
 
-When developing, follow the instructions here: [INSTALL.md](./INSTALL_LOCALLY)
+When developing, follow the instructions here: [INSTALL.md](./INSTALL_LOCALLY.md)
 
 ### NOTE: Viam running as root and rmw_fastrtps_cpp
 By default, rmw_fastrtps_cpp uses [eProsima](https://www.eprosima.com/index.php) DDS implementation, 
@@ -61,6 +61,18 @@ the DDS implementation to use `UDPv4` as the only transport, see [fastdds_rpi.xm
 the example config used in turtlebot4.
 
 For non-turtlebot4 implementations, update the specific fastdds_rpi.xml file in you implementation.
+
+## Troubleshooting
+
+1. The ros2-integration module uses python virtual environments. Verify that the following package is installed:
+```bash
+sudo apt-get install -y python3-venv
+```
+
+2. The ros2-integration module also requires the python cv_bridge package which can be installed using the following command:
+```bash
+sudo apt-get install ros-<ROS Version Name>-cv-bridge
+```
 
 ## Contact & Contributions
 We welcome pull requests and issues, if there are any issues you can email us at:
