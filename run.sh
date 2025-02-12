@@ -66,5 +66,8 @@ fi
 RUST_UTILS_SO=$(find "${SCRIPT_DIR}" -name libviam_rust_utils.so -printf '%h')
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${RUST_UTILS_SO}
 
+# Set DDS to use UDP only and deactivate shared memory
+export FASTRTPS_DEFAULT_PROFILES_FILE=/opt/ros/humble/fastdds_rpi.xml
+
 # execute script
 exec "${SCRIPT_DIR}"/venv/bin/python3 "${SCRIPT_DIR}"/main.py "$@"
