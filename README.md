@@ -1,4 +1,4 @@
-# viam-ros2-module
+# Viam ROS2 Integration Module
 
 This Viam - ROS2 integration allows you to connect to your ROS2 environment, publish messages, collect data and make it accessible through the Viam API layer as well as storing it locally on the system or upload it into the Viam cloud platform.
 The integration has been tested with ROS2 Humble and Turtlebot 4.
