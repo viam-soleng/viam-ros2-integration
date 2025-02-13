@@ -92,7 +92,9 @@ You can set these environment variables as follows:
 
 #### Install Locally (Development)
 
-For developing or testing the raw module can also be deployed locally. To do so follow the instructions here: [INSTALL.md](./INSTALL_LOCALLY.md)
+For developing or testing the raw module can also be deployed locally. 
+
+To do so follow the instructions here: [INSTALL.md](./INSTALL_LOCALLY.md)
 
 ## Troubleshooting
 
