@@ -36,7 +36,9 @@ The easiest way to install this module is via our [Viam Registry](https://app.vi
 
 #### Viam Node UDP Only Mode
 
-If Viam is deplody on the same system, due to the DDS default configuration shared memory "SHM" is used. The Viam node currently does not support shared memory and therefore "SHM" needs to be disabled so it uses UDP only. To do this, you have to copy/create a file containing this configration [fastdd_rpi.xml](./sample_configs/fastdds_rpi.xml) into a suitable path on your machine.
+If Viam is deplody on the same system, due to the DDS default configuration shared memory "SHM" is used. The Viam node currently does not support shared memory and therefore "SHM" needs to be disabled so it uses UDP only. 
+
+To do this, you have to copy/create a file containing this configration [fastdd_rpi.xml](./sample_configs/fastdds_rpi.xml) into a suitable path on your machine.
 
 You can then load this configuration by adding the `FASTRTPS_DEFAULT_PROFILES_FILE` environment variable with the correct path for your system into your module configuration:
 
