@@ -48,7 +48,7 @@ You can then load this configuration by adding the `FASTRTPS_DEFAULT_PROFILES_FI
       "module_id": "viam-soleng:viam-ros2-integration",
       "version": "0.0.11",
       "env": {
-        "FASTRTPS_DEFAULT_PROFILES_FILE": "/opt/ros/humble/fastdds_rpi.xml" # Change according to your system
+        "FASTRTPS_DEFAULT_PROFILES_FILE": "/opt/ros/humble/fastdds_rpi.xml" # Change accordingly
       }
     }
   ]
