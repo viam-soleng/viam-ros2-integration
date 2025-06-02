@@ -6,7 +6,8 @@ from typing_extensions import Self
 from viam.logging import getLogger
 from viam.module.types import Reconfigurable
 from viam.proto.app.robot import ServiceConfig
-from viam.resource.base import ResourceBase, ResourceName
+from viam.proto.common import ResourceName
+from viam.resource.base import ResourceBase
 from viam.resource.types import Model, ModelFamily
 
 from components.viam_ros_node import ViamRosNode
@@ -16,8 +17,7 @@ from .api import ROS2ServiceService
 
 
 class MyROS2ServiceService(ROS2ServiceService, Reconfigurable):
-
-    MODEL: ClassVar[Model] = Model(ModelFamily('viam-soleng', 'ros2'), 'service_client')
+    MODEL: ClassVar[Model] = Model(ModelFamily("viam-soleng", "ros2"), "service_client")
 
     # Instance variables
     ros_node: Union[ViamRosNode, None]
@@ -28,7 +28,7 @@ class MyROS2ServiceService(ROS2ServiceService, Reconfigurable):
         super().__init__(name)
         self.ros_node = None
         self.lock = Lock()
-        self.logger = getLogger(f'{__name__}.{self.__class__.__name__}')
+        self.logger = getLogger(f"{__name__}.{self.__class__.__name__}")
 
     # Constructor
     @classmethod
@@ -41,8 +41,10 @@ class MyROS2ServiceService(ROS2ServiceService, Reconfigurable):
 
     # Validates JSON Configuration
     @classmethod
-    def validate_config(cls, config: ServiceConfig) -> Sequence[str]:
-        return []
+    def validate_config(
+        cls, config: ServiceConfig
+    ) -> tuple[Sequence[str], Sequence[str]]:
+        return [], []
 
     # Handles attribute reconfiguration
     def reconfigure(
@@ -60,5 +62,3 @@ class MyROS2ServiceService(ROS2ServiceService, Reconfigurable):
 
     async def status(self, goal_name: str) -> ServiceResponse:
         pass
-
-

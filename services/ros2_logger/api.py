@@ -27,7 +27,7 @@ from grpclib.client import Channel
 from grpclib.server import Stream
 
 from viam.resource.rpc_service_base import ResourceRPCServiceBase
-from viam.resource.types import RESOURCE_TYPE_SERVICE, Subtype
+from viam.resource.types import RESOURCE_TYPE_SERVICE, API
 from viam.services.service_base import ServiceBase
 
 from proto.ros2_logger_grpc import ROS2LoggerServiceBase, ROS2LoggerServiceStub
@@ -39,11 +39,10 @@ class ROS2LoggerService(ServiceBase):
     Viam ROS 2 logger service subclass of the ServiceBase class including additional abstract methods to be implemented
     """
 
-    SUBTYPE: Final = Subtype("viam-soleng", RESOURCE_TYPE_SERVICE, "ros2_logger")
+    API: Final = API("viam-soleng", RESOURCE_TYPE_SERVICE, "ros2_logger")
 
     @abc.abstractmethod
-    async def status(self) -> Response:
-        ...
+    async def status(self) -> Response: ...
 
 
 class ROS2LoggerRPCService(ROS2LoggerServiceBase, ResourceRPCServiceBase):
@@ -70,7 +69,4 @@ class ROS2LoggerClient(ROS2LoggerService):
 
     async def status(self) -> dict[str, Any]:
         resp: Response = await self.client.Status(Request(name=self.name))
-        return {
-            'ros_topic': resp.ros_topic,
-            'ros_log_level': resp.log_level
-        }
+        return {"ros_topic": resp.ros_topic, "ros_log_level": resp.log_level}

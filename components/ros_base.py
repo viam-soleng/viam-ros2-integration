@@ -63,7 +63,7 @@ class RosBase(Base, Reconfigurable):
         return base
 
     @classmethod
-    def validate_config(cls, config: ComponentConfig) -> Sequence[str]:
+    def validate_config(cls, config: ComponentConfig) -> tuple[Sequence[str],Sequence[str]]:
         """
         validate_config requires:
         ros_topic: the topic to subscribe to
@@ -88,7 +88,7 @@ class RosBase(Base, Reconfigurable):
         if publish_time == 0.0:
             raise Exception('time (in seconds) required')
 
-        return []
+        return [], []
 
     def ros_publisher_cb(self) -> None:
         """
@@ -231,7 +231,7 @@ Register the new MODEL as well as define how the object is validated
 and created
 """
 Registry.register_resource_creator(
-    Base.SUBTYPE,
+    Base.API,
     RosBase.MODEL,
     ResourceCreatorRegistration(RosBase.new, RosBase.validate_config)
 )

@@ -8,7 +8,8 @@ from typing_extensions import Self
 from viam.logging import getLogger
 from viam.module.types import Reconfigurable
 from viam.proto.app.robot import ServiceConfig
-from viam.resource.base import ResourceBase, ResourceName
+from viam.proto.common import ResourceName
+from viam.resource.base import ResourceBase
 from viam.resource.types import Model, ModelFamily
 
 from components.viam_ros_node import ViamRosNode
@@ -46,11 +47,13 @@ class MyROS2LoggerService(ROS2LoggerService, Reconfigurable):
 
     # Validates JSON Configuration
     @classmethod
-    def validate_config(cls, config: ServiceConfig) -> Sequence[str]:
+    def validate_config(
+        cls, config: ServiceConfig
+    ) -> tuple[Sequence[str], Sequence[str]]:
         ros_topic = config.attributes.fields["ros_topic"].string_value
         if ros_topic == "":
             raise Exception("A ros_topic attribute is required for this service.")
-        return []
+        return [], []
 
     # Handles attribute reconfiguration
     def reconfigure(
@@ -96,7 +99,5 @@ class MyROS2LoggerService(ROS2LoggerService, Reconfigurable):
             pass
 
     async def status(self) -> dict:
-        return {
-            "ros_topic": "self.ros_topic",
-            "log_level": "self.log_level"
-        }
+        return {"ros_topic": "self.ros_topic", "log_level": "self.log_level"}
+

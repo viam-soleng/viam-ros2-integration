@@ -3,6 +3,7 @@ sensor.py
 
 We treat all non-specific topics as sensors right now
 """
+
 import importlib
 import numpy as np
 import threading
@@ -37,7 +38,8 @@ class RosSensor(Sensor, Reconfigurable):
     The sensor will then use the standard message functions to dynamically
     build retrieve the results
     """
-    MODEL: ClassVar[Model] = Model(ModelFamily('viam-soleng', 'ros2'), 'sensor')
+
+    MODEL: ClassVar[Model] = Model(ModelFamily("viam-soleng", "ros2"), "sensor")
     ros_topic: str
     ros_node: ViamRosNode
     ros_msg_type: str
@@ -48,7 +50,9 @@ class RosSensor(Sensor, Reconfigurable):
     subscription: rclpy.subscription.Subscription
 
     @classmethod
-    def new(cls, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]) -> Self:
+    def new(
+        cls, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]
+    ) -> Self:
         """
         Class method to create a new instance of the sensor
         """
@@ -58,7 +62,9 @@ class RosSensor(Sensor, Reconfigurable):
         return sensor
 
     @classmethod
-    def validate_config(cls, config: ComponentConfig) -> Sequence[str]:
+    def validate_config(
+        cls, config: ComponentConfig
+    ) -> tuple[Sequence[str], Sequence[str]]:
         """
         class method used to validate the configuration of the sensor
 
@@ -67,36 +73,40 @@ class RosSensor(Sensor, Reconfigurable):
         2. ros_msg_package: this will be where the module is located for the message
         3. ros_msg_type: this is the class that represents the ROS message
         """
-        topic = config.attributes.fields['ros_topic'].string_value
-        msg_package = config.attributes.fields['ros_msg_package'].string_value
-        msg_type = config.attributes.fields['ros_msg_type'].string_value
+        topic = config.attributes.fields["ros_topic"].string_value
+        msg_package = config.attributes.fields["ros_msg_package"].string_value
+        msg_type = config.attributes.fields["ros_msg_type"].string_value
 
-        if topic == '':
-            raise Exception('ros_topic required')
+        if topic == "":
+            raise Exception("ros_topic required")
 
-        if msg_package == '':
-            raise Exception('ros_msg_package required')
-        if msg_type == '':
-            raise Exception('ros_msg_type required')
+        if msg_package == "":
+            raise Exception("ros_msg_package required")
+        if msg_type == "":
+            raise Exception("ros_msg_type required")
 
         try:
             tmp = importlib.import_module(msg_package)
             if not hasattr(tmp, msg_type):
-                raise Exception(f'invalid ros_msg_type, {msg_package} does not have {msg_type}')
+                raise Exception(
+                    f"invalid ros_msg_type, {msg_package} does not have {msg_type}"
+                )
         except ModuleNotFoundError as mnfe:
-            raise Exception(f'invalid ros_msg_type: {mnfe}')
+            raise Exception(f"invalid ros_msg_type: {mnfe}")
 
-        return []
+        return [], []
 
-    def reconfigure(self, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]) -> None:
+    def reconfigure(
+        self, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]
+    ) -> None:
         """
         This method is called with the robot configuration is changed, for this process
         to work we will destroy the subscription as well as reset the node then setup
         the subscription with the topic
         """
-        self.ros_topic = config.attributes.fields['ros_topic'].string_value
-        self.ros_msg_package = config.attributes.fields['ros_msg_package'].string_value
-        self.ros_msg_type = config.attributes.fields['ros_msg_type'].string_value
+        self.ros_topic = config.attributes.fields["ros_topic"].string_value
+        self.ros_msg_package = config.attributes.fields["ros_msg_package"].string_value
+        self.ros_msg_type = config.attributes.fields["ros_msg_type"].string_value
 
         lib = importlib.import_module(self.ros_msg_package)
         self.ros_sensor_cls = getattr(lib, self.ros_msg_type)
@@ -110,14 +120,14 @@ class RosSensor(Sensor, Reconfigurable):
         qos_policy = rclpy.qos.QoSProfile(
             reliability=rclpy.qos.ReliabilityPolicy.BEST_EFFORT,
             history=rclpy.qos.HistoryPolicy.KEEP_LAST,
-            depth=1
+            depth=1,
         )
 
         self.subscription = self.ros_node.create_subscription(
             self.ros_sensor_cls,
             self.ros_topic,
             self.subscriber_callback,
-            qos_profile=qos_policy
+            qos_profile=qos_policy,
         )
         self.lock = Lock()
         self.msg = None
@@ -137,9 +147,9 @@ class RosSensor(Sensor, Reconfigurable):
     async def get_readings(
         self,
         *,
-        extra: Optional[Mapping[str, Any]]=None,
-        timeout: Optional[float]=None,
-        **kwargs
+        extra: Optional[Mapping[str, Any]] = None,
+        timeout: Optional[float] = None,
+        **kwargs,
     ) -> Mapping[str, Any]:
         """
         get_readings is the core sensor interface which is called by
@@ -158,7 +168,7 @@ class RosSensor(Sensor, Reconfigurable):
 
         if msg is not None:
             return build_msg(msg)
-        return {'value': 'NOT_READY'}
+        return {"value": "NOT_READY"}
 
 
 def build_msg(msg):
@@ -177,7 +187,7 @@ def build_msg(msg):
     :return:
     """
     r_data = {}
-    if hasattr(msg, 'get_fields_and_field_types'):
+    if hasattr(msg, "get_fields_and_field_types"):
         fields_and_types = msg.get_fields_and_field_types()
         for key in fields_and_types.keys():
             r_data[key] = build_msg(getattr(msg, key))
@@ -186,7 +196,13 @@ def build_msg(msg):
         msg_type = type(msg)
         # for list types we must analyze each element as it could be a ROS type
         # which needs further decomposition
-        if msg_type is list or msg_type is tuple or msg_type is set or msg_type is array or msg_type is np.ndarray:
+        if (
+            msg_type is list
+            or msg_type is tuple
+            or msg_type is set
+            or msg_type is array
+            or msg_type is np.ndarray
+        ):
             l_data = []
             for value in msg:
                 l_data.append(build_msg(value))
@@ -194,10 +210,10 @@ def build_msg(msg):
         # for dictionary types we must analyze each value found in the key as it can
         # be a ROS type or list type which will need further decomposition
         elif msg_type is dict:
-                d_data = {}
-                for key in msg.keys():
-                    d_data[key] = build_msg(msg[key])
-                return d_data
+            d_data = {}
+            for key in msg.keys():
+                d_data[key] = build_msg(msg[key])
+            return d_data
         else:
             return msg
     return r_data
@@ -208,7 +224,7 @@ Register the new MODEL as well as define how the object is validated
 and created
 """
 Registry.register_resource_creator(
-    Sensor.SUBTYPE,
+    Sensor.API,
     RosSensor.MODEL,
-    ResourceCreatorRegistration(RosSensor.new, RosSensor.validate_config)
+    ResourceCreatorRegistration(RosSensor.new, RosSensor.validate_config),
 )

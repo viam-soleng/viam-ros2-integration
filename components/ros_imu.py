@@ -13,6 +13,7 @@ the movementsensor for viam also provides support for:
 If we need support for other types we can use this interface to create GPS, compass, and
 other implementations as needed for ROS
 """
+
 import rclpy
 import viam
 from threading import Lock
@@ -59,7 +60,7 @@ class RosImuProperties(MovementSensor.Properties):
             orientation_supported=True,
             position_supported=False,
             compass_heading_supported=False,
-            linear_velocity_supported=False
+            linear_velocity_supported=False,
         )
 
 
@@ -68,7 +69,8 @@ class RosImu(MovementSensor, Reconfigurable):
     RosImu converts ROS IMU message to movementsensor values to be used
     by the viam RDK
     """
-    MODEL: ClassVar[Model] = Model(ModelFamily('viam-soleng', 'ros2'), 'imu')
+
+    MODEL: ClassVar[Model] = Model(ModelFamily("viam-soleng", "ros2"), "imu")
     ros_topic: str
     ros_node: Node
     subscription: Subscription
@@ -77,7 +79,9 @@ class RosImu(MovementSensor, Reconfigurable):
     props: RosImuProperties
 
     @classmethod
-    def new(cls, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]) -> Self:
+    def new(
+        cls, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]
+    ) -> Self:
         """
         new() creates a new RosImu object to be used by the viam RDK
         """
@@ -88,21 +92,25 @@ class RosImu(MovementSensor, Reconfigurable):
         return imu
 
     @classmethod
-    def validate_config(cls, config: ComponentConfig) -> Sequence[str]:
+    def validate_config(
+        cls, config: ComponentConfig
+    ) -> tuple[Sequence[str], Sequence[str]]:
         """
         validate_config ensures that the ros_topic is set
         """
-        topic = config.attributes.fields['ros_topic'].string_value
-        if topic == '':
-            raise Exception('ros_topic required')
-        return []
+        topic = config.attributes.fields["ros_topic"].string_value
+        if topic == "":
+            raise Exception("ros_topic required")
+        return [], []
 
-    def reconfigure(self, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]) -> None:
+    def reconfigure(
+        self, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]
+    ) -> None:
         """
         reconfigure will configure the ROS node as needed during startup and when the
         RDK configuration is updated.
         """
-        self.ros_topic = config.attributes.fields['ros_topic'].string_value
+        self.ros_topic = config.attributes.fields["ros_topic"].string_value
 
         if self.ros_node is not None:
             if self.subscription is not None:
@@ -113,14 +121,11 @@ class RosImu(MovementSensor, Reconfigurable):
         qos_policy = rclpy.qos.QoSProfile(
             reliability=rclpy.qos.ReliabilityPolicy.BEST_EFFORT,
             history=rclpy.qos.HistoryPolicy.KEEP_LAST,
-            depth=1
+            depth=1,
         )
 
         self.subscription = self.ros_node.create_subscription(
-            Imu,
-            self.ros_topic,
-            self.subscriber_callback,
-            qos_profile=qos_policy
+            Imu, self.ros_topic, self.subscriber_callback, qos_profile=qos_policy
         )
         self.lock = Lock()
         self.msg = None
@@ -137,7 +142,7 @@ class RosImu(MovementSensor, Reconfigurable):
         *,
         extra: Optional[Dict[str, Any]] = None,
         timeout: Optional[float] = None,
-        **kwargs
+        **kwargs,
     ) -> Tuple[viam.components.movement_sensor.GeoPoint, float]:
         """
         get_position is not supported by the ROS IMU topic
@@ -149,7 +154,7 @@ class RosImu(MovementSensor, Reconfigurable):
         *,
         extra: Optional[Dict[str, Any]] = None,
         timeout: Optional[float] = None,
-        **kwargs
+        **kwargs,
     ) -> viam.components.movement_sensor.Vector3:
         """
         get_linear_velocity is not supported by the ROS Imu message
@@ -161,7 +166,7 @@ class RosImu(MovementSensor, Reconfigurable):
         *,
         extra: Optional[Dict[str, Any]] = None,
         timeout: Optional[float] = None,
-        **kwargs
+        **kwargs,
     ) -> viam.components.movement_sensor.Vector3:
         """
         get_angular_velocity returns the angular velocity vector from the IMU message
@@ -176,7 +181,7 @@ class RosImu(MovementSensor, Reconfigurable):
         *,
         extra: Optional[Dict[str, Any]] = None,
         timeout: Optional[float] = None,
-        **kwargs
+        **kwargs,
     ) -> viam.components.movement_sensor.Vector3:
         """
         get_linear_acceleration returns the linear acceleration vector from the IMU message
@@ -191,7 +196,7 @@ class RosImu(MovementSensor, Reconfigurable):
         *,
         extra: Optional[Dict[str, Any]] = None,
         timeout: Optional[float] = None,
-        **kwargs
+        **kwargs,
     ) -> float:
         """
         get_compass_heading is not supported by the ROS IMU message
@@ -203,7 +208,7 @@ class RosImu(MovementSensor, Reconfigurable):
         *,
         extra: Optional[Dict[str, Any]] = None,
         timeout: Optional[float] = None,
-        **kwargs
+        **kwargs,
     ) -> viam.components.movement_sensor.Orientation:
         """
         get_orientation returns the orientation represented as an orientation vector from the
@@ -219,7 +224,7 @@ class RosImu(MovementSensor, Reconfigurable):
         *,
         extra: Optional[Dict[str, Any]] = None,
         timeout: Optional[float] = None,
-        **kwargs
+        **kwargs,
     ) -> Mapping[str, float]:
         """
         get_accuracy is not implemented
@@ -227,7 +232,9 @@ class RosImu(MovementSensor, Reconfigurable):
         return {}
         raise Unimplemented()
 
-    async def get_properties(self, *, timeout: Optional[float] = None, **kwargs) -> MovementSensor.Properties:
+    async def get_properties(
+        self, *, timeout: Optional[float] = None, **kwargs
+    ) -> MovementSensor.Properties:
         """
         get_properties returns the supported commands for the imu
         """
@@ -238,7 +245,7 @@ class RosImu(MovementSensor, Reconfigurable):
         command: Mapping[str, ValueTypes],
         *,
         timeout: Optional[float] = None,
-        **kwargs
+        **kwargs,
     ):
         """
         do_command - not implemented
@@ -251,7 +258,7 @@ Register the new MODEL as well as define how the object is validated
 and created
 """
 Registry.register_resource_creator(
-    MovementSensor.SUBTYPE,
+    MovementSensor.API,
     RosImu.MODEL,
-    ResourceCreatorRegistration(RosImu.new, RosImu.validate_config)
+    ResourceCreatorRegistration(RosImu.new, RosImu.validate_config),
 )

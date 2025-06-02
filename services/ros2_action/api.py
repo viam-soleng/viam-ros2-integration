@@ -5,7 +5,7 @@ from grpclib.client import Channel
 from grpclib.server import Stream
 
 from viam.resource.rpc_service_base import ResourceRPCServiceBase
-from viam.resource.types import RESOURCE_TYPE_SERVICE, Subtype
+from viam.resource.types import RESOURCE_TYPE_SERVICE, API
 from viam.services.service_base import ServiceBase
 
 from proto.ros2_action_grpc import ROS2ActionServiceBase, ROS2ActionServiceStub
@@ -17,19 +17,16 @@ class ROS2ActionService(ServiceBase):
     Viam ROS 2 logger service subclass of the ServiceBase class including additional abstract methods to be implemented
     """
 
-    SUBTYPE: Final = Subtype('viam-soleng', RESOURCE_TYPE_SERVICE, 'action_client')
+    API: Final = API("viam-soleng", RESOURCE_TYPE_SERVICE, "action_client")
 
     @abc.abstractmethod
-    async def send_goal(self, goal_name: str) -> ActionResponse:
-        ...
+    async def send_goal(self, goal_name: str) -> ActionResponse: ...
 
     @abc.abstractmethod
-    async def cancel_goal(self, goal_name: str) -> ActionResponse:
-        ...
+    async def cancel_goal(self, goal_name: str) -> ActionResponse: ...
 
     @abc.abstractmethod
-    async def goal_status(self, goal_name: str) -> ActionResponse:
-        ...
+    async def goal_status(self, goal_name: str) -> ActionResponse: ...
 
 
 class ROS2ActionRPCService(ROS2ActionServiceBase, ResourceRPCServiceBase):
@@ -61,20 +58,25 @@ class ROS2ActionRPCService(ROS2ActionServiceBase, ResourceRPCServiceBase):
 
 
 class ROS2ActionClient(ROS2ActionService):
-
     def __init__(self, name: str, channel: Channel) -> None:
         self.channel = channel
         self.client = ROS2ActionServiceStub(channel)
         super().__init__(name)
 
     async def goal_status(self, goal_name: str) -> str:
-        resp: ActionResponse = await self.client.GoalStatus(ActionRequest(name=self.name, action=goal_name))
+        resp: ActionResponse = await self.client.GoalStatus(
+            ActionRequest(name=self.name, action=goal_name)
+        )
         return resp.response
 
     async def cancel_goal(self, goal_name: str) -> str:
-        resp: ActionResponse = await self.client.CancelGoal(ActionRequest(name=self.name, action=goal_name))
+        resp: ActionResponse = await self.client.CancelGoal(
+            ActionRequest(name=self.name, action=goal_name)
+        )
         return resp.response
 
     async def send_goal(self, goal_name: str) -> str:
-        resp: ActionResponse = await self.client.SendGoal(ActionRequest(name=self.name, action=goal_name))
+        resp: ActionResponse = await self.client.SendGoal(
+            ActionRequest(name=self.name, action=goal_name)
+        )
         return resp.response

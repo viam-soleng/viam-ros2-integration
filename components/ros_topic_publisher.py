@@ -20,7 +20,7 @@ logger = getLogger(__name__)
 
 
 class RosTopicPublisher(Generic, Reconfigurable):
-    MODEL: ClassVar[Model] = Model(ModelFamily('viamlabs', 'ros2'), 'topic-publisher')
+    MODEL: ClassVar[Model] = Model(ModelFamily("viamlabs", "ros2"), "topic-publisher")
     lock: Lock
     logger: logging.Logger
     msg: String
@@ -31,31 +31,37 @@ class RosTopicPublisher(Generic, Reconfigurable):
     ros_topic: str
 
     @classmethod
-    def new(cls, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]) -> Self:
+    def new(
+        cls, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]
+    ) -> Self:
         publisher = cls(config.name)
         publisher.ros_node = None
         publisher.reconfigure(config, dependencies)
         return publisher
 
     @classmethod
-    def validate_config(cls, config: ComponentConfig) -> Sequence[str]:
-        topic = config.attributes.fields['ros_topic'].string_value
-        publish_rate = float(config.attributes.fields['publish_rate'].string_value)
+    def validate_config(
+        cls, config: ComponentConfig
+    ) -> tuple[Sequence[str], Sequence[str]]:
+        topic = config.attributes.fields["ros_topic"].string_value
+        publish_rate = float(config.attributes.fields["publish_rate"].string_value)
 
-        if topic == '':
-            raise Exception('ros_topic required')
+        if topic == "":
+            raise Exception("ros_topic required")
 
         if publish_rate == 0.0:
-            raise Exception('rate required')
+            raise Exception("rate required")
 
-        return []
+        return [], []
 
     def ros_publisher_cb(self):
         self.publisher.publish(self.msg)
 
-    def reconfigure(self, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]):
-        self.ros_topic = config.attributes.fields['ros_topic'].string_value
-        self.publish_rate = float(config.attributes.fields['publish_rate'].string_value)
+    def reconfigure(
+        self, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]
+    ):
+        self.ros_topic = config.attributes.fields["ros_topic"].string_value
+        self.publish_rate = float(config.attributes.fields["publish_rate"].string_value)
         self.msg = String()
 
         if self.ros_node is not None:
@@ -71,21 +77,23 @@ class RosTopicPublisher(Generic, Reconfigurable):
         self.lock = Lock()
 
     async def do_command(
-            self,
-            command: Mapping[str, ValueTypes],
-            *,
-            timeout: Optional[float] = None,
-            **kwargs
+        self,
+        command: Mapping[str, ValueTypes],
+        *,
+        timeout: Optional[float] = None,
+        **kwargs,
     ):
         for key in command:
-            if key == 'send':
+            if key == "send":
                 with self.lock:
                     self.msg.data = command[key]
         return {}
 
 
 Registry.register_resource_creator(
-    Generic.SUBTYPE,
+    Generic.API,
     RosTopicPublisher.MODEL,
-    ResourceCreatorRegistration(RosTopicPublisher.new, RosTopicPublisher.validate_config)
+    ResourceCreatorRegistration(
+        RosTopicPublisher.new, RosTopicPublisher.validate_config
+    ),
 )
