@@ -110,6 +110,16 @@ sudo apt-get install -y python3-venv
 sudo apt-get install ros-<ROS Version Name>-cv-bridge
 ```
 
+### NOTE: ros_camera config on turtlebot4
+
+The Turtlebot4 machines were deployed with Oak-D cameras, while these robots are docked, the camera is
+turned off. On first boot, the camera will not display an image until the robot moves off the dock. 
+
+When the robot docks, the last image will continue to be shown. 
+
+We will need to think about providing a general solution to this problem rather than implementing something
+specific to the Turtlebot4.
+
 ## Contact & Contributions
 
 We welcome pull requests and issues, if there are any issues you can email us at:

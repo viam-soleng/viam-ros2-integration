@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package viamlabs.service.ros2_action.v1;
+
+import "google/api/annotations.proto";
+
+service ROS2ActionService {
+    rpc SendGoal (ActionRequest) returns (ActionResponse) {
+        option (google.api.http) = {
+            post: "/viamsoleng/api/v1/service/ros2_action/{name}/send_goal_async"
+        };
+    }
+
+    rpc CancelGoal (ActionRequest) returns (ActionResponse) {
+        option (google.api.http) = {
+            post: "/viamsoleng/api/v1/service/ros2_action/{name}/cancel_goal"
+        };
+    }
+
+    rpc GoalStatus (ActionRequest) returns (ActionResponse) {
+        option (google.api.http) = {
+            post: "/viamsoleng/api/v1/service/ros2_action/{name}/goal_status"
+        };
+    }
+}
+
+message ActionRequest {
+    string name = 1;
+    string action = 2;
+}
+
+message ActionResponse {
+    string response = 1;
+}

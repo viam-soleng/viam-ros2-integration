@@ -6,6 +6,7 @@ converts ros image to viam image which allows for higher level processing by via
 TODO: should we expose the intrinsic and distortion parameters
       should we raise an exception rather than return an empty image
 """
+
 from PIL import Image
 import rclpy
 import viam
@@ -31,7 +32,8 @@ class RosCamera(Camera, Reconfigurable):
     """
     RosCamera converts ROS Image message to Viam Image
     """
-    MODEL: ClassVar[Model] = Model(ModelFamily('viam-soleng', 'ros2'), 'camera')
+
+    MODEL: ClassVar[Model] = Model(ModelFamily("viam-soleng", "ros2"), "camera")
 
     # Instance variables
     ros_topic: str
@@ -41,7 +43,7 @@ class RosCamera(Camera, Reconfigurable):
     lock: Lock
     image: ROSImage
     bridge: CvBridge
-    encoding: str                   # supported encoding found in sensor_msgs/image_encoding.hpp
+    encoding: str  # supported encoding found in sensor_msgs/image_encoding.hpp
 
     @classmethod
     def new(
@@ -61,15 +63,17 @@ class RosCamera(Camera, Reconfigurable):
         return camera
 
     @classmethod
-    def validate_config(cls, config: ComponentConfig) -> Sequence[str]:
+    def validate_config(
+        cls, config: ComponentConfig
+    ) -> tuple[Sequence[str], Sequence[str]]:
         """
         validate_config is used to validate the viam configuration of the RosCamera object, the
         only attribute required is "ros_topic"
         """
-        topic = config.attributes.fields['ros_topic'].string_value
-        if topic == '':
-            raise Exception('ros_topic required')
-        return []
+        topic = config.attributes.fields["ros_topic"].string_value
+        if topic == "":
+            raise Exception("ros_topic required")
+        return [], []
 
     def reconfigure(
         self, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]
@@ -78,13 +82,13 @@ class RosCamera(Camera, Reconfigurable):
         reconfigure is called when new is called as well as when the RDK configuration is
         updated, during this process we will update the ros node with the new configuration
         """
-        self.encoding = config.attributes.fields['encoding'].string_value
+        self.encoding = config.attributes.fields["encoding"].string_value
         if self.encoding is None:
-            self.encoding = 'passthrough'
+            self.encoding = "passthrough"
         else:
             self.encoding = self.encoding.lower().strip()
 
-        self.ros_topic = config.attributes.fields['ros_topic'].string_value
+        self.ros_topic = config.attributes.fields["ros_topic"].string_value
         if self.ros_node is not None:
             if self.subscription is not None:
                 self.ros_node.destroy_subscription(self.subscription)
@@ -110,10 +114,7 @@ class RosCamera(Camera, Reconfigurable):
         self.image = image
 
     async def get_image(
-        self,
-        mime_type: str = '',
-        timeout: Optional[float] = None,
-        **kwargs
+        self, mime_type: str = "", timeout: Optional[float] = None, **kwargs
     ) -> Image:
         """
         get_image will either return an empty image if the topic is not ready
@@ -123,15 +124,14 @@ class RosCamera(Camera, Reconfigurable):
             img = self.image
 
         if img is None:
-            return Image.new(mode='RGB', size=(250, 250))
+            return Image.new(mode="RGB", size=(250, 250))
         else:
-            return Image.fromarray(self.bridge.imgmsg_to_cv2(img, desired_encoding=self.encoding))
+            return Image.fromarray(
+                self.bridge.imgmsg_to_cv2(img, desired_encoding=self.encoding)
+            )
 
     async def get_images(
-        self,
-        *,
-        timeout: Optional[float] = None,
-        **kwargs
+        self, *, timeout: Optional[float] = None, **kwargs
     ) -> Tuple[List[viam.media.video.NamedImage], viam.proto.common.ResponseMetadata]:
         """
         get_images currently not supported
@@ -139,17 +139,16 @@ class RosCamera(Camera, Reconfigurable):
         raise NotImplementedError()
 
     async def get_point_cloud(
-        self,
-        *,
-        timeout: Optional[float] = None,
-        **kwargs
+        self, *, timeout: Optional[float] = None, **kwargs
     ) -> Tuple[bytes, str]:
         """
         get_point_cloud is not supported for the basic ROS Image
         """
         raise NotImplementedError()
 
-    async def get_properties(self, *, timeout: Optional[float] = None, **kwargs) -> Camera.Properties:
+    async def get_properties(
+        self, *, timeout: Optional[float] = None, **kwargs
+    ) -> Camera.Properties:
         """
         get_properties returns the properties supported by the camera
         """
@@ -173,7 +172,7 @@ Register the new MODEL as well as define how the object is validated
 and created
 """
 Registry.register_resource_creator(
-    Camera.SUBTYPE,
+    Camera.API,
     RosCamera.MODEL,
     ResourceCreatorRegistration(RosCamera.new, RosCamera.validate_config),
 )

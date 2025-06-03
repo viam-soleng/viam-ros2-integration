@@ -11,7 +11,7 @@ from viam.resource.registry import (
 from .api import ROS2LoggerClient, ROS2LoggerRPCService, ROS2LoggerService
 from .ros2_logger import MyROS2LoggerService
 
-Registry.register_subtype(
+Registry.register_api(
     ResourceRegistration(
         ROS2LoggerService,
         ROS2LoggerRPCService,
@@ -20,7 +20,7 @@ Registry.register_subtype(
 )
 
 Registry.register_resource_creator(
-    ROS2LoggerService.SUBTYPE,
+    ROS2LoggerService.API,
     MyROS2LoggerService.MODEL,
     ResourceCreatorRegistration(MyROS2LoggerService.new),
 )

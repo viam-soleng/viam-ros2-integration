@@ -7,7 +7,7 @@ import "google/api/annotations.proto";
 service ROS2LoggerService {
     rpc Status (Request) returns (Response) {
         option (google.api.http) = {
-            post: "/viamlabs/api/v1/service/ros2_logger/{name}/status"
+            post: "/viamsoleng/api/v1/service/ros2_logger/{name}/status"
           };
     }
 }

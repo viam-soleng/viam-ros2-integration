@@ -27,7 +27,23 @@
     {
       "api": "viam-soleng:service:ros2_logger",
       "model": "viam-soleng:ros2:logger"
+    },
+    {
+      "api": "viam-soleng:service:action_client",
+      "model": "viam-soleng:ros2:action_client"
+    },
+    {
+      "api": "viam-soleng:service:service_client",
+      "model": "viam-soleng:ros2:service_client"
     }
   ],
-  "entrypoint": "run.sh"
+  "entrypoint": "run.sh",
+  "build": {
+    "build": "make module.tar.gz",
+    "path": "module.tar.gz",
+    "arch": [
+      "linux/arm64",
+      "linux/amd64"
+    ]
+  }
 }

@@ -9,7 +9,7 @@ class RclpyNodeManager:
 
     A singleton pattern to ensure we have only
     one Multithreaded executor spinning for the
-    viam intagration.
+    viam integration.
 
     The multithreaded executor is used so we can
     support multiple nodes as needed.

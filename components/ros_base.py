@@ -10,16 +10,17 @@ In viam only the Y component in the linear vector is used for wheeled bases, wit
 positive implying forward and only the Z component in the angular component is used
 for wheeled bases, with positive turning left.
 
-TODO: add attributes to support different base types, currently our publisher will
-      continue to publish messages even if the twist message vectors are all 0, this
-      can cause issues when we attempt to call base actions like "dock" etc.
-      More testing will be needed to ensure the base works as expected
+A base can also support actions and services
 """
+import importlib
+import logging
 from threading import Lock
-import viam
-from typing import Any, ClassVar, Dict, Mapping, Optional, Sequence, Tuple
+from typing import Any, ClassVar, Dict, Mapping, Optional, Sequence
 from typing_extensions import Self
+
+import viam
 from viam.components.base import Base
+from viam.logging import getLogger
 from viam.module.types import Reconfigurable
 from viam.proto.app.robot import ComponentConfig
 from viam.proto.common import ResourceName
@@ -46,6 +47,7 @@ class RosBase(Base, Reconfigurable):
     ros_node: ViamRosNode
     ros_topic: str
     twist_msg: Twist
+    logger: logging.Logger
 
     @classmethod
     def new(cls, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]) -> Self:
@@ -54,11 +56,14 @@ class RosBase(Base, Reconfigurable):
         """
         base = cls(config.name)
         base.ros_node = None
+        base.ros_action_client = None
+        base.ros_service_client = None
+        base.logger = getLogger(base.__class__.__name__)
         base.reconfigure(config, dependencies)
         return base
 
     @classmethod
-    def validate_config(cls, config: ComponentConfig) -> Sequence[str]:
+    def validate_config(cls, config: ComponentConfig) -> tuple[Sequence[str],Sequence[str]]:
         """
         validate_config requires:
         ros_topic: the topic to subscribe to
@@ -83,13 +88,12 @@ class RosBase(Base, Reconfigurable):
         if publish_time == 0.0:
             raise Exception('time (in seconds) required')
 
-        return []
+        return [], []
 
     def ros_publisher_cb(self) -> None:
         """
         ros_publisher_cb will be called by the ros node to publish twist messages
-        TODO: we will have to introduce logic here to stop publishing if
-              required
+        TODO: we will have to introduce logic here to stop publishing if required
         """
         self.publisher.publish(self.twist_msg)
 
@@ -101,6 +105,7 @@ class RosBase(Base, Reconfigurable):
         """
         self.ros_topic = config.attributes.fields['ros_topic'].string_value
         self.publish_time = float(config.attributes.fields['publish_time'].string_value)
+
         self.twist_msg = Twist()
 
         if self.ros_node is not None:
@@ -215,11 +220,10 @@ class RosBase(Base, Reconfigurable):
             **kwargs
     ) -> Mapping[str, ValueTypes]:
         """
-        Currently not supported
-
-        TODO: add custom base-related services here
+        the do_command supports execution ROS service calls and action calls
         """
-        raise NotImplementedError()
+        ret: Dict = {}
+        return ret
 
 
 """
@@ -227,7 +231,7 @@ Register the new MODEL as well as define how the object is validated
 and created
 """
 Registry.register_resource_creator(
-    Base.SUBTYPE,
+    Base.API,
     RosBase.MODEL,
     ResourceCreatorRegistration(RosBase.new, RosBase.validate_config)
 )

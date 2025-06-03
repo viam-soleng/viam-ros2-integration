@@ -6,6 +6,7 @@ transformed to point cloud data to be consumed by the RDK
 
 Currently, we support 2D scans without intensity
 """
+
 import math
 import numpy as np
 import rclpy
@@ -17,7 +18,12 @@ from sensor_msgs.msg import LaserScan
 from threading import Lock
 from typing import ClassVar, List, Mapping, Optional, Sequence, Tuple, Union
 from typing_extensions import Self
-from viam.components.camera import Camera, DistortionParameters, IntrinsicParameters, RawImage
+from viam.components.camera import (
+    Camera,
+    DistortionParameters,
+    IntrinsicParameters,
+    RawImage,
+)
 from viam.media.video import NamedImage
 from viam.module.types import Reconfigurable
 from viam.proto.app.robot import ComponentConfig
@@ -29,14 +35,14 @@ from .viam_ros_node import ViamRosNode
 from viam.media.video import CameraMimeType
 
 # PCD required header information
-VERSION = 'VERSION .7\n'
-FIELDS = 'FIELDS x y z\n'
-SIZE = 'SIZE 4 4 4\n'
-TYPE_OF = 'TYPE F F F\n'
-COUNT = 'COUNT 1 1 1\n'
-HEIGHT = 'HEIGHT 1\n'
-VIEWPOINT = 'VIEWPOINT 0 0 0 1 0 0 0\n'
-DATA = 'DATA binary\n'
+VERSION = "VERSION .7\n"
+FIELDS = "FIELDS x y z\n"
+SIZE = "SIZE 4 4 4\n"
+TYPE_OF = "TYPE F F F\n"
+COUNT = "COUNT 1 1 1\n"
+HEIGHT = "HEIGHT 1\n"
+VIEWPOINT = "VIEWPOINT 0 0 0 1 0 0 0\n"
+DATA = "DATA binary\n"
 
 
 class RosLidar(Camera, Reconfigurable):
@@ -46,7 +52,8 @@ class RosLidar(Camera, Reconfigurable):
 
     For this integration we require the ros topic to consume
     """
-    MODEL: ClassVar[Model] = Model(ModelFamily('viam-soleng', 'ros2'), 'lidar')
+
+    MODEL: ClassVar[Model] = Model(ModelFamily("viam-soleng", "ros2"), "lidar")
     ros_topic: str
     ros_node: Node
     subscription: Subscription
@@ -55,7 +62,9 @@ class RosLidar(Camera, Reconfigurable):
     msg: LaserScan
 
     @classmethod
-    def new(cls, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]) -> Self:
+    def new(
+        cls, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]
+    ) -> Self:
         """
         new creates a new lidar object which will subscribe to the configured lidar scan topic
         """
@@ -65,29 +74,33 @@ class RosLidar(Camera, Reconfigurable):
         return lidar
 
     @classmethod
-    def validate_config(cls, config: ComponentConfig) -> Sequence[str]:
+    def validate_config(
+        cls, config: ComponentConfig
+    ) -> tuple[Sequence[str], Sequence[str]]:
         """
         validate_config requires one component attribute which is the ros_topic to
         subscribe to
         """
-        topic = config.attributes.fields['ros_topic'].string_value
-        if topic == '':
-            raise Exception('ros_topic required')
-        return []
+        topic = config.attributes.fields["ros_topic"].string_value
+        if topic == "":
+            raise Exception("ros_topic required")
+        return [], []
 
-    def reconfigure(self, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]) -> None:
+    def reconfigure(
+        self, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]
+    ) -> None:
         """
         reconfigure is called when the RDK configuration is changed, during this process
         we will update the ros node to ensure this component is properly configured base
         on any system configuration changes
         """
-        self.ros_topic = config.attributes.fields['ros_topic'].string_value
+        self.ros_topic = config.attributes.fields["ros_topic"].string_value
         self.ros_lidar_properties = Camera.Properties(
             supports_pcd=True,
             intrinsic_parameters=IntrinsicParameters(
                 width_px=0, height_px=0, focal_x_px=0.0, focal_y_px=0.0, center_x_px=0.0
             ),
-            distortion_parameters=DistortionParameters(model='')
+            distortion_parameters=DistortionParameters(model=""),
         )
 
         if self.ros_node is not None:
@@ -99,13 +112,10 @@ class RosLidar(Camera, Reconfigurable):
         qos_policy = rclpy.qos.QoSProfile(
             reliability=rclpy.qos.ReliabilityPolicy.SYSTEM_DEFAULT,
             history=rclpy.qos.HistoryPolicy.SYSTEM_DEFAULT,
-            depth=1
+            depth=1,
         )
         self.subscription = self.ros_node.create_subscription(
-            LaserScan,
-            self.ros_topic,
-            self.subscriber_callback,
-            qos_profile=qos_policy
+            LaserScan, self.ros_topic, self.subscriber_callback, qos_profile=qos_policy
         )
         self.lock = Lock()
         self.msg = None
@@ -116,7 +126,9 @@ class RosLidar(Camera, Reconfigurable):
         """
         self.msg = msg
 
-    async def get_image(self, mime_type: str='', *, timeout: Optional[float]=None, **kwargs) -> Union[Image, RawImage]:
+    async def get_image(
+        self, mime_type: str = "", *, timeout: Optional[float] = None, **kwargs
+    ) -> Union[Image, RawImage]:
         """
         get_image
         in Viam a lidar is considered a type of camera meaning it must implement all the
@@ -126,10 +138,7 @@ class RosLidar(Camera, Reconfigurable):
         raise NotImplementedError()
 
     async def get_images(
-            self,
-            *,
-            timeout: Optional[float]=None,
-            **kwargs
+        self, *, timeout: Optional[float] = None, **kwargs
     ) -> Tuple[List[NamedImage], ResponseMetadata]:
         """
         get_images
@@ -138,7 +147,9 @@ class RosLidar(Camera, Reconfigurable):
         """
         raise NotImplementedError()
 
-    async def get_point_cloud(self, *, timeout: Optional[float]=None, **kwargs) -> Tuple[bytes, str]:
+    async def get_point_cloud(
+        self, *, timeout: Optional[float] = None, **kwargs
+    ) -> Tuple[bytes, str]:
         """
         get_point_cloud
         In viam lidar points are represented by point cloud elements,
@@ -147,7 +158,7 @@ class RosLidar(Camera, Reconfigurable):
             msg = self.msg
 
         if msg is None:
-            raise Exception('laserscan msg not ready')
+            raise Exception("laserscan msg not ready")
 
         pdata = []
         for i, r in enumerate(msg.ranges):
@@ -161,15 +172,17 @@ class RosLidar(Camera, Reconfigurable):
             pdata.append(y)
             pdata.append(float(0))
 
-        width = f'WIDTH {len(pdata)}\n'
-        points = f'POINTS {len(pdata)}\n'
-        header = f'{VERSION}{FIELDS}{SIZE}{TYPE_OF}{COUNT}{width}{HEIGHT}{VIEWPOINT}{points}{DATA}'
-        a = np.array(pdata, dtype='f')
-        h = bytes(header, 'UTF-8')
+        width = f"WIDTH {len(pdata)}\n"
+        points = f"POINTS {len(pdata)}\n"
+        header = f"{VERSION}{FIELDS}{SIZE}{TYPE_OF}{COUNT}{width}{HEIGHT}{VIEWPOINT}{points}{DATA}"
+        a = np.array(pdata, dtype="f")
+        h = bytes(header, "UTF-8")
 
         return h + a.tobytes(), CameraMimeType.PCD
 
-    async def get_properties(self, *, timeout: Optional[float] = None, **kwargs) -> Camera.Properties:
+    async def get_properties(
+        self, *, timeout: Optional[float] = None, **kwargs
+    ) -> Camera.Properties:
         """
         Return the base lidar properties
         """
@@ -181,7 +194,7 @@ Register the new MODEL as well as define how the object is validated
 and created
 """
 Registry.register_resource_creator(
-    Camera.SUBTYPE,
+    Camera.API,
     RosLidar.MODEL,
-    ResourceCreatorRegistration(RosLidar.new, RosLidar.validate_config)
+    ResourceCreatorRegistration(RosLidar.new, RosLidar.validate_config),
 )
