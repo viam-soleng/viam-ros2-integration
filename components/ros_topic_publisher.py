@@ -20,7 +20,9 @@ logger = getLogger(__name__)
 
 
 class RosTopicPublisher(Generic, Reconfigurable):
-    MODEL: ClassVar[Model] = Model(ModelFamily("viamlabs", "ros2"), "topic-publisher")
+    MODEL: ClassVar[Model] = Model(
+        ModelFamily("viam-soleng", "ros2"), "topic-publisher"
+    )
     lock: Lock
     logger: logging.Logger
     msg: String

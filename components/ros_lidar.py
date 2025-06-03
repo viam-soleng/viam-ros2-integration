@@ -22,7 +22,7 @@ from viam.components.camera import (
     Camera,
     DistortionParameters,
     IntrinsicParameters,
-    RawImage,
+    ViamImage,
 )
 from viam.media.video import NamedImage
 from viam.module.types import Reconfigurable
@@ -128,7 +128,7 @@ class RosLidar(Camera, Reconfigurable):
 
     async def get_image(
         self, mime_type: str = "", *, timeout: Optional[float] = None, **kwargs
-    ) -> Union[Image, RawImage]:
+    ) -> ViamImage:
         """
         get_image
         in Viam a lidar is considered a type of camera meaning it must implement all the

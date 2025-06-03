@@ -139,7 +139,7 @@ class MyROS2ActionService(ROS2ActionService, Reconfigurable):
     # Validates JSON Configuration
     @classmethod
     def validate_config(
-        cls, config: ComponentConfig
+        cls, config: ServiceConfig
     ) -> tuple[Sequence[str], Sequence[str]]:
         actions = config.attributes.fields["actions"].list_value
         if len(actions) == 0:

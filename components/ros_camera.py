@@ -9,14 +9,15 @@ TODO: should we expose the intrinsic and distortion parameters
 
 from PIL import Image
 import rclpy
-import viam
 from threading import Lock
 from typing import ClassVar, Mapping, Optional, Sequence, Tuple, List
 from typing_extensions import Self
 from viam.components.camera import Camera, IntrinsicParameters, DistortionParameters
+from viam.media.utils.pil import pil_to_viam_image
+from viam.media.video import CameraMimeType, NamedImage
 from viam.module.types import Reconfigurable
 from viam.proto.app.robot import ComponentConfig
-from viam.proto.common import ResourceName
+from viam.proto.common import ResourceName, ResponseMetadata
 from viam.resource.base import ResourceBase
 from viam.resource.registry import Registry, ResourceCreatorRegistration
 from viam.resource.types import Model, ModelFamily
@@ -123,16 +124,21 @@ class RosCamera(Camera, Reconfigurable):
         with self.lock:
             img = self.image
 
+        pil_image = None
         if img is None:
-            return Image.new(mode="RGB", size=(250, 250))
+            pil_image = (Image.new(mode="RGB", size=(250, 250)),)
         else:
-            return Image.fromarray(
+            pil_image = Image.fromarray(
                 self.bridge.imgmsg_to_cv2(img, desired_encoding=self.encoding)
             )
+        assert pil_image is not None
+        return pil_to_viam_image(
+            pil_image, mime_type=CameraMimeType.from_string(mime_type)
+        )
 
     async def get_images(
         self, *, timeout: Optional[float] = None, **kwargs
-    ) -> Tuple[List[viam.media.video.NamedImage], viam.proto.common.ResponseMetadata]:
+    ) -> Tuple[List[NamedImage], ResponseMetadata]:
         """
         get_images currently not supported
         """

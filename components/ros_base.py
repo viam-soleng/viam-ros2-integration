@@ -12,14 +12,13 @@ for wheeled bases, with positive turning left.
 
 A base can also support actions and services
 """
-import importlib
+
 import logging
 from threading import Lock
 from typing import Any, ClassVar, Dict, Mapping, Optional, Sequence
 from typing_extensions import Self
 
-import viam
-from viam.components.base import Base
+from viam.components.base import Base, Vector3
 from viam.logging import getLogger
 from viam.module.types import Reconfigurable
 from viam.proto.app.robot import ComponentConfig
@@ -38,7 +37,8 @@ class RosBase(Base, Reconfigurable):
     """
     RosBase represents a wheeled base that supports Twist Messages
     """
-    MODEL: ClassVar[Model] = Model(ModelFamily('viam-soleng', 'ros2'), 'base')
+
+    MODEL: ClassVar[Model] = Model(ModelFamily("viam-soleng", "ros2"), "base")
     is_base_moving: bool
     lock: Lock
     publisher: Publisher
@@ -50,7 +50,9 @@ class RosBase(Base, Reconfigurable):
     logger: logging.Logger
 
     @classmethod
-    def new(cls, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]) -> Self:
+    def new(
+        cls, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]
+    ) -> Self:
         """
         new() creates a new wheeled base class
         """
@@ -63,30 +65,32 @@ class RosBase(Base, Reconfigurable):
         return base
 
     @classmethod
-    def validate_config(cls, config: ComponentConfig) -> tuple[Sequence[str],Sequence[str]]:
+    def validate_config(
+        cls, config: ComponentConfig
+    ) -> tuple[Sequence[str], Sequence[str]]:
         """
         validate_config requires:
         ros_topic: the topic to subscribe to
         publish_time: the rate at which to publish messages in seconds
         """
-        topic = config.attributes.fields['ros_topic'].string_value
-        publish_time = config.attributes.fields['publish_time'].string_value
+        topic = config.attributes.fields["ros_topic"].string_value
+        publish_time = config.attributes.fields["publish_time"].string_value
 
-        if publish_time == '':
-            raise Exception('time (in seconds) required as float')
+        if publish_time == "":
+            raise Exception("time (in seconds) required as float")
         else:
             try:
                 publish_time = float(publish_time)
                 if publish_time == 0.0:
-                    raise Exception('time (in seconds) required as float')
+                    raise Exception("time (in seconds) required as float")
             except ValueError as ve:
-                raise Exception(f'invalid value for time (in seconds): {ve}')
+                raise Exception(f"invalid value for time (in seconds): {ve}")
 
-        if topic == '':
-            raise Exception('ros_topic required')
+        if topic == "":
+            raise Exception("ros_topic required")
 
         if publish_time == 0.0:
-            raise Exception('time (in seconds) required')
+            raise Exception("time (in seconds) required")
 
         return [], []
 
@@ -97,14 +101,16 @@ class RosBase(Base, Reconfigurable):
         """
         self.publisher.publish(self.twist_msg)
 
-    def reconfigure(self, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]) -> None:
+    def reconfigure(
+        self, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]
+    ) -> None:
         """
         reconfigure will reconfigure the ros component when the rdk configuration is updated
         this will require shutting down the publisher if it exists as well as the timer
         and resetting on possible new configurations
         """
-        self.ros_topic = config.attributes.fields['ros_topic'].string_value
-        self.publish_time = float(config.attributes.fields['publish_time'].string_value)
+        self.ros_topic = config.attributes.fields["ros_topic"].string_value
+        self.publish_time = float(config.attributes.fields["publish_time"].string_value)
 
         self.twist_msg = Twist()
 
@@ -117,18 +123,20 @@ class RosBase(Base, Reconfigurable):
             self.ros_node = ViamRosNode.get_viam_ros_node()
 
         self.publisher = self.ros_node.create_publisher(Twist, self.ros_topic, 10)
-        self.timer = self.ros_node.create_timer(self.publish_time, self.ros_publisher_cb)
+        self.timer = self.ros_node.create_timer(
+            self.publish_time, self.ros_publisher_cb
+        )
         self.is_base_moving = False
         self.lock = Lock()
 
     async def move_straight(
-            self,
-            distance: int,
-            velocity: float,
-            *,
-            extra: Optional[Dict[str, Any]] = None,
-            timeout: Optional[float] = None,
-            **kwargs
+        self,
+        distance: int,
+        velocity: float,
+        *,
+        extra: Optional[Dict[str, Any]] = None,
+        timeout: Optional[float] = None,
+        **kwargs,
     ) -> None:
         """
         move_straight currently not implemented
@@ -136,13 +144,13 @@ class RosBase(Base, Reconfigurable):
         raise NotImplementedError()
 
     async def spin(
-            self,
-            angle: float,
-            velocity: float,
-            *,
-            extra: Optional[Dict[str, Any]] = None,
-            timeout: Optional[float] = None,
-            **kwargs
+        self,
+        angle: float,
+        velocity: float,
+        *,
+        extra: Optional[Dict[str, Any]] = None,
+        timeout: Optional[float] = None,
+        **kwargs,
     ) -> None:
         """
         spin: currently not implemented
@@ -150,12 +158,13 @@ class RosBase(Base, Reconfigurable):
         raise NotImplementedError()
 
     async def set_power(
-            self,
-            linear: viam.components.base.Vector3,
-            angular: viam.components.base.Vector3,
-            *,
-            extra: Optional[Dict[str, Any]] = None,
-            timeout: Optional[float] = None, **kwargs
+        self,
+        linear: Vector3,
+        angular: Vector3,
+        *,
+        extra: Optional[Dict[str, Any]] = None,
+        timeout: Optional[float] = None,
+        **kwargs,
     ) -> None:
         """
         set_power convert Viam linear and angular velocity to twist message to be published
@@ -166,13 +175,13 @@ class RosBase(Base, Reconfigurable):
             self.is_base_moving = True
 
     async def set_velocity(
-            self,
-            linear: viam.components.base.Vector3,
-            angular: viam.components.base.Vector3,
-            *,
-            extra: Optional[Dict[str, Any]] = None,
-            timeout: Optional[float] = None,
-            **kwargs
+        self,
+        linear: Vector3,
+        angular: Vector3,
+        *,
+        extra: Optional[Dict[str, Any]] = None,
+        timeout: Optional[float] = None,
+        **kwargs,
     ) -> None:
         """
         set_velocity convert Viam linear and angular velocity to twist message to be published
@@ -183,10 +192,10 @@ class RosBase(Base, Reconfigurable):
             self.is_base_moving = True
 
     async def stop(
-            self,
-            extra: Optional[Dict[str, Any]] = None,
-            timeout: Optional[float] = None,
-            **kwargs
+        self,
+        extra: Optional[Dict[str, Any]] = None,
+        timeout: Optional[float] = None,
+        **kwargs,
     ) -> None:
         """
         stop() will stop the base by publishing a twist message with 0's as the components for
@@ -203,7 +212,9 @@ class RosBase(Base, Reconfigurable):
         """
         return self.is_base_moving
 
-    async def get_properties(self, *, timeout: Optional[float] = None, **kwargs) -> Base.Properties:
+    async def get_properties(
+        self, *, timeout: Optional[float] = None, **kwargs
+    ) -> Base.Properties:
         """
         return the base width and turning radius
 
@@ -213,11 +224,11 @@ class RosBase(Base, Reconfigurable):
         raise NotImplementedError()
 
     async def do_command(
-            self,
-            command: Mapping[str, ValueTypes],
-            *,
-            timeout: Optional[float] = None,
-            **kwargs
+        self,
+        command: Mapping[str, ValueTypes],
+        *,
+        timeout: Optional[float] = None,
+        **kwargs,
     ) -> Mapping[str, ValueTypes]:
         """
         the do_command supports execution ROS service calls and action calls
@@ -233,5 +244,5 @@ and created
 Registry.register_resource_creator(
     Base.API,
     RosBase.MODEL,
-    ResourceCreatorRegistration(RosBase.new, RosBase.validate_config)
+    ResourceCreatorRegistration(RosBase.new, RosBase.validate_config),
 )

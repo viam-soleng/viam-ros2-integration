@@ -15,12 +15,16 @@ other implementations as needed for ROS
 """
 
 import rclpy
-import viam
 from threading import Lock
 from utils import quaternion_to_orientation
 from typing import Any, ClassVar, Dict, Mapping, Optional, Sequence, Tuple
 from typing_extensions import Self
-from viam.components.movement_sensor import MovementSensor, Orientation, Vector3
+from viam.components.movement_sensor import (
+    MovementSensor,
+    Vector3,
+    GeoPoint,
+    Orientation,
+)
 from viam.module.types import Reconfigurable
 from viam.proto.app.robot import ComponentConfig
 from viam.proto.common import ResourceName
@@ -143,7 +147,7 @@ class RosImu(MovementSensor, Reconfigurable):
         extra: Optional[Dict[str, Any]] = None,
         timeout: Optional[float] = None,
         **kwargs,
-    ) -> Tuple[viam.components.movement_sensor.GeoPoint, float]:
+    ) -> Tuple[GeoPoint, float]:
         """
         get_position is not supported by the ROS IMU topic
         """
@@ -155,7 +159,7 @@ class RosImu(MovementSensor, Reconfigurable):
         extra: Optional[Dict[str, Any]] = None,
         timeout: Optional[float] = None,
         **kwargs,
-    ) -> viam.components.movement_sensor.Vector3:
+    ) -> Vector3:
         """
         get_linear_velocity is not supported by the ROS Imu message
         """
@@ -167,7 +171,7 @@ class RosImu(MovementSensor, Reconfigurable):
         extra: Optional[Dict[str, Any]] = None,
         timeout: Optional[float] = None,
         **kwargs,
-    ) -> viam.components.movement_sensor.Vector3:
+    ) -> Vector3:
         """
         get_angular_velocity returns the angular velocity vector from the IMU message
         """
@@ -182,7 +186,7 @@ class RosImu(MovementSensor, Reconfigurable):
         extra: Optional[Dict[str, Any]] = None,
         timeout: Optional[float] = None,
         **kwargs,
-    ) -> viam.components.movement_sensor.Vector3:
+    ) -> Vector3:
         """
         get_linear_acceleration returns the linear acceleration vector from the IMU message
         """
@@ -209,7 +213,7 @@ class RosImu(MovementSensor, Reconfigurable):
         extra: Optional[Dict[str, Any]] = None,
         timeout: Optional[float] = None,
         **kwargs,
-    ) -> viam.components.movement_sensor.Orientation:
+    ) -> Orientation:
         """
         get_orientation returns the orientation represented as an orientation vector from the
         Imu orientation quaternion
@@ -225,12 +229,11 @@ class RosImu(MovementSensor, Reconfigurable):
         extra: Optional[Dict[str, Any]] = None,
         timeout: Optional[float] = None,
         **kwargs,
-    ) -> Mapping[str, float]:
+    ):
         """
         get_accuracy is not implemented
         """
-        return {}
-        raise Unimplemented()
+        pass
 
     async def get_properties(
         self, *, timeout: Optional[float] = None, **kwargs
