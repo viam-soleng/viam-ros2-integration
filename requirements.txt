@@ -1,1 +1,2 @@
 viam-sdk==0.47.0
+pillow==9.1.0
