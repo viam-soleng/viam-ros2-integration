@@ -13,15 +13,17 @@ If you are reporting a bug, please include:
 - Any details about your local setup that might be helpful in troubleshooting.
 - Detailed steps to reproduce the bug.
 
-[Link to submit](https://viam.atlassian.net/servicedesk/customer/portal/7)
+[Link to submit a github issue](https://github.com/viam-soleng/viam-ros2-integration/issues/new)
 
 ### Fix Bugs
 
-Look through the [Jira tickets](???) for bug ticket types.
+Look through the GitHub issues for bugs. Anything tagged with "bug" and "help
+wanted" is open to whoever wants to implement it.
 
 ### Implement Features
 
-Look through the [Jira tickets](???) for features which are "task" ticket types.
+Look through the GitHub issues for features. Anything tagged with "enhancement"
+and "help wanted" is open to whoever wants to implement it.
 
 ### Write Documentation
 
