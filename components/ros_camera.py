@@ -136,14 +136,28 @@ class RosCamera(Camera, Reconfigurable):
             pil_image, mime_type=CameraMimeType.from_string(mime_type)
         )
 
+
     async def get_images(
         self, *, timeout: Optional[float] = None, **kwargs
-    ) -> Tuple[List[NamedImage], ResponseMetadata]:
+    ) -> Tuple[List[NamedImage], ResponseMetadata]: 
         """
-        get_images currently not supported
+        get_images returns a list of NamedImage objects, in this case we will
+        return a single image with the name of the component
         """
-        raise NotImplementedError()
+        # Call get_image to retrieve the image
+        image = await self.get_image(timeout=timeout, **kwargs)
 
+        # Create NamedImage with source_name
+        named_image = NamedImage(
+                name=self.name,  # source name 
+                data=image.data,
+                mime_type=image.mime_type
+            )
+        
+        # Return list of NamedImages and metadata
+        return [named_image], ResponseMetadata()
+
+     
     async def get_point_cloud(
         self, *, timeout: Optional[float] = None, **kwargs
     ) -> Tuple[bytes, str]:
