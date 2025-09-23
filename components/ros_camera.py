@@ -10,7 +10,7 @@ TODO: should we expose the intrinsic and distortion parameters
 from PIL import Image
 import rclpy
 from threading import Lock
-from typing import ClassVar, Mapping, Optional, Sequence, Tuple, List
+from typing import ClassVar, Mapping, Optional, Sequence, Tuple, List, Any
 from typing_extensions import Self
 from viam.components.camera import Camera, IntrinsicParameters, DistortionParameters
 from viam.media.utils.pil import pil_to_viam_image
@@ -115,7 +115,7 @@ class RosCamera(Camera, Reconfigurable):
         self.image = image
 
     async def get_image(
-        self, mime_type: str = "", timeout: Optional[float] = None, **kwargs
+        self, mime_type: str = "", *, timeout: Optional[float] = None, extra: Optional[Mapping[str, Any]] = None, metadata: Optional[Mapping[str, Any]] = None, **kwargs
     ) -> Image:
         """
         get_image will either return an empty image if the topic is not ready
@@ -126,38 +126,44 @@ class RosCamera(Camera, Reconfigurable):
 
         pil_image = None
         if img is None:
-            pil_image = (Image.new(mode="RGB", size=(250, 250)),)
+            pil_image = Image.new(mode="RGB", size=(250, 250)) 
         else:
             pil_image = Image.fromarray(
                 self.bridge.imgmsg_to_cv2(img, desired_encoding=self.encoding)
             )
+        
         assert pil_image is not None
+        
         return pil_to_viam_image(
             pil_image, mime_type=CameraMimeType.from_string(mime_type)
         )
 
-
     async def get_images(
-        self, *, timeout: Optional[float] = None, **kwargs
-    ) -> Tuple[List[NamedImage], ResponseMetadata]: 
-        """
-        get_images returns a list of NamedImage objects, in this case we will
-        return a single image with the name of the component
-        """
-        # Call get_image to retrieve the image
-        image = await self.get_image(timeout=timeout, **kwargs)
-
-        # Create NamedImage with source_name
-        named_image = NamedImage(
-                name=self.name,  # source name 
-                data=image.data,
-                mime_type=image.mime_type
-            )
+        self, 
+        *,
+        timeout: Optional[float] = None,
+        metadata: Optional[Mapping[str, Any]] = None,
+        extra: Optional[Mapping[str, Any]] = None,
+        filter_source_names: Optional[List[str]] = None,
+        **kwargs
+    ) -> Tuple[List[NamedImage], ResponseMetadata]:
+        # Apply filtering if specified - if filter is provided and our camera name is not in it, return empty
+        if filter_source_names and self.name not in filter_source_names:
+            return [], ResponseMetadata()
         
+        # Get the current image
+        image = await self.get_image(timeout=timeout, **kwargs)
+        
+        # Create NamedImage
+        named_image = NamedImage(
+            name=self.name,
+            data=image.data,
+            mime_type=image.mime_type
+        )
+            
         # Return list of NamedImages and metadata
         return [named_image], ResponseMetadata()
 
-     
     async def get_point_cloud(
         self, *, timeout: Optional[float] = None, **kwargs
     ) -> Tuple[bytes, str]:
