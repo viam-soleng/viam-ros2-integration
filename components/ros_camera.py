@@ -27,7 +27,7 @@ from rclpy.subscription import Subscription
 from sensor_msgs.msg import Image as ROSImage
 from .viam_ros_node import ViamRosNode
 from cv_bridge import CvBridge
-
+import logging
 
 class RosCamera(Camera, Reconfigurable):
     """
@@ -54,7 +54,10 @@ class RosCamera(Camera, Reconfigurable):
         new() creates new instance of a RosCamera
         """
         camera = cls(config.name)
+        camera.logger = logging.getLogger(__name__)
+        camera.image = None
         camera.ros_node = None
+
         camera.props = Camera.Properties(
             supports_pcd=False,
             distortion_parameters=DistortionParameters(),
@@ -121,11 +124,12 @@ class RosCamera(Camera, Reconfigurable):
         get_image will either return an empty image if the topic is not ready
         or a new PIL.Image from the ROS Image message
         """
-        with self.lock:
+        with self.lock:                        
             img = self.image
 
         pil_image = None
         if img is None:
+            self.logger.warning("Camera check needed: No ROS image data received on topic '%s'", self.ros_topic)
             pil_image = Image.new(mode="RGB", size=(250, 250)) 
         else:
             pil_image = Image.fromarray(
