@@ -2,7 +2,7 @@
 
 For easier development and/or debugging you can directly clone this repository onto your machine and add it as local module in your Viam configuration.
 
-## Prerequisits
+## Prerequisites
 
 It is assumed you have already successfully deployed the Viam Server and it has successfully connected to the Viam Cloud platform as explained here: [instructions](https://docs.viam.com/installation/)
 
